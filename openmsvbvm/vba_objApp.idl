@@ -1,0 +1,155 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(33ad4f79-6699-11cf-b70c-00aa0060d393), /* Original */
+	//cocl 33ad4f78-6699-11cf-b70c-00aa0060d393
+	//uuid(0EC94A23-2161-446D-AC25-581835A0F50E), /* New */
+	helpstring("Contains general information about an application."),
+	helpcontext(0x000dfa39),
+	hidden,
+	nonextensible
+]
+interface IApp : IDispatch
+{
+/*
+.text:6601BE8C                 dd offset ?HctlDemandLoad@_CCTLUSER_vtbl@@UAEJPAPAUCTL@@@Z ; _CCTLUSER_vtbl::HctlDemandLoad(CTL * *)
+.text:6601BE90                 dd offset ?ChkProp@_CLINE_vtbl@@UAEJHTtagDATA@@@Z ; _CLINE_vtbl::ChkProp(int,tagDATA)
+.text:6601BE94                 dd offset ?SetPropA@_CFRAME_vtbl@@UAEJHTtagDATA@@@Z ; _CFRAME_vtbl::SetPropA(int,tagDATA)
+.text:6601BE98                 dd offset ?GetPropA@_CLINE_vtbl@@UAEJHPATtagDATA@@@Z ; _CLINE_vtbl::GetPropA(int,tagDATA *)
+.text:6601BE9C                 dd offset ?GetPropHsz@_CPIX_vtbl@@UAEJHPAPAD@Z ; _CPIX_vtbl::GetPropHsz(int,char * *)
+.text:6601BEA0                 dd offset ?LoadProp@_CCTLUSER_vtbl@@UAEJHPAUFILEREF@@@Z ; _CCTLUSER_vtbl::LoadProp(int,FILEREF *)
+.text:6601BEA4                 dd offset ?SaveProp@_COLE2CLIENT_vtbl@@UAEJHPAUFILEREF@@@Z ; _COLE2CLIENT_vtbl::SaveProp(int,FILEREF *)
+.text:6601BEA8                 dd offset ?GetPalette@_CSHAPE_vtbl@@UAEPAUHPALETTE__@@XZ ; _CSHAPE_vtbl::GetPalette(void)
+.text:6601BEAC                 dd offset ?Reset@_CLABEL_vtbl@@UAEXXZ ; _CLABEL_vtbl::Reset(void)
+.text:6601BEB0                 dd offset ?get_DefaultProp@_CAPP_vtbl@@UAGJPAUtagVARIANT@@@Z ; _CAPP_vtbl::get_DefaultProp(tagVARIANT *)
+.text:6601BEB4                 dd offset ?put_DefaultProp@_CAPP_vtbl@@UAGJUtagVARIANT@@@Z ; _CAPP_vtbl::put_DefaultProp(tagVARIANT)
+.text:6601BEB8                 dd offset ?get_000x@_CAPP_vtbl@@UAGJPAX@Z ; _CAPP_vtbl::get_000x(void *)
+.text:6601BEBC                 dd offset ?put_000x@_CAPP_vtbl@@UAGJJ@Z ; _CAPP_vtbl::put_000x(long)
+*/
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall HctlDemandLoad([out] unsigned int * ctl);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall ChkProp([in] unsigned int i, [out] unsigned int * tagData);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall SetPropA([in] unsigned int i, [out] unsigned int * tagData);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall GetPropA([in] unsigned int i, [out] unsigned int * tagData);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall GetPropHsz([in] unsigned int i, [out] char ** hsz);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall LoadProp([in] unsigned int i, [out] unsigned int * fref);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall SaveProp([in] unsigned int i, [out] unsigned int * fref);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall GetPalette(void);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall Reset(void);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall get_DefaultProp([out] VARIANT * var);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall put_DefaultProp([out] VARIANT * var);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall get_000x([out] VARIANT * var);
+	[helpstring("Unknown exported method")]
+	HRESULT _stdcall put_000x([in] unsigned int i);
+
+	[propget, helpstring("Specifies the path of the project .VBP file when running the application from the development environment or the path of the executable file when running the application as an executable file."), helpcontext(0x000dfc1a)]
+	HRESULT _stdcall Path([out, retval] BSTR* rhs);
+	[propput, helpstring("Specifies the path of the project .VBP file when running the application from the development environment or the path of the executable file when running the application as an executable file."), helpcontext(0x000dfc1a)]
+	HRESULT _stdcall Path([in] BSTR rhs);
+
+	[propget, helpstring("Returns the name of the executable file for the current project.  If running in the development environment, returns the name of the project."), helpcontext(0x000dfc41)]
+	HRESULT _stdcall EXEName([out, retval] BSTR* rhs);
+	[propput, helpstring("Sets the name of the executable file for the current project.  If running in the development environment, returns the name of the project."), helpcontext(0x000dfc41)]
+	HRESULT _stdcall EXEName([in] BSTR rhs);
+
+	[propget, helpstring("Returns/sets the title of the application displayed in the Microsoft Windows Task List."), helpcontext(0x000dfcad)]
+	HRESULT _stdcall Title([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the title of the application displayed in the Microsoft Windows Task List."), helpcontext(0x000dfcad)]
+	HRESULT _stdcall Title([in] BSTR rhs);
+
+	/*[id(0x00010004), propget, helpstring("Returns a value that determines whether a previous instance of an application is already running."), helpcontext(0x000dfc8f)]
+	HRESULT PrevInstance([out, retval] VARIANT_BOOL* rhs);
+	[id(0x00010005), propget, helpstring("Returns/sets whether an application starts as a stand-alone project or an ActiveX component."), helpcontext(0x000dfca5)]
+	HRESULT StartMode([out, retval] short* rhs);
+	[id(0x00010006), propget, helpstring("Returns/sets a value that determines if a task is visible in the task list."), helpcontext(0x000dfcd9)]
+	HRESULT TaskVisible([out, retval] VARIANT_BOOL* rhs);
+	[id(0x00010006), propput, helpstring("Returns/sets a value that determines if a task is visible in the task list."), helpcontext(0x000dfcd9)]
+	HRESULT TaskVisible([in] VARIANT_BOOL rhs);
+	[id(0x00010007), propget, helpstring("Returns/sets milliseconds during which an Automation request will continue to be retried."), helpcontext(0x000dfcda)]
+	HRESULT OleServerBusyTimeout([out, retval] long* rhs);
+	[id(0x00010007), propput, helpstring("Returns/sets milliseconds during which an Automation request will continue to be retried."), helpcontext(0x000dfcda)]
+	HRESULT OleServerBusyTimeout([in] long rhs);
+	[id(0x00010008), propget, helpstring("Returns/sets title of 'busy' message displayed when an ActiveX component rejects a request."), helpcontext(0x000dfcdb)]
+	HRESULT OleServerBusyMsgTitle([out, retval] BSTR* rhs);
+	[id(0x00010008), propput, helpstring("Returns/sets title of 'busy' message displayed when an ActiveX component rejects a request."), helpcontext(0x000dfcdb)]
+	HRESULT OleServerBusyMsgTitle([in] BSTR rhs);
+	[id(0x00010009), propget, helpstring("Returns/sets text of 'busy' message displayed if an ActiveX component rejects a request."), helpcontext(0x000dfcdc)]
+	HRESULT OleServerBusyMsgText([out, retval] BSTR* rhs);
+	[id(0x00010009), propput, helpstring("Returns/sets text of 'busy' message displayed if an ActiveX component rejects a request."), helpcontext(0x000dfcdc)]
+	HRESULT OleServerBusyMsgText([in] BSTR rhs);
+	[id(0x0001000a), propget, helpstring("Determines whether a rejected Automation request raises an error, instead of displaying a 'busy' message."), helpcontext(0x000dfcdd)]
+	HRESULT OleServerBusyRaiseError([out, retval] VARIANT_BOOL* rhs);
+	[id(0x0001000a), propput, helpstring("Determines whether a rejected Automation request raises an error, instead of displaying a 'busy' message."), helpcontext(0x000dfcdd)]
+	HRESULT OleServerBusyRaiseError([in] VARIANT_BOOL rhs);
+	[id(0x0001000b), propget, helpstring("Returns/sets milliseconds Automation requests will run before user actions trigger a 'busy' message."), helpcontext(0x000dfcde)]
+	HRESULT OleRequestPendingTimeout([out, retval] long* rhs);
+	[id(0x0001000b), propput, helpstring("Returns/sets milliseconds Automation requests will run before user actions trigger a 'busy' message."), helpcontext(0x000dfcde)]
+	HRESULT OleRequestPendingTimeout([in] long rhs);
+	[id(0x0001000c), propget, helpstring("Returns/sets title of 'busy' message displayed while an Automation request is pending."), helpcontext(0x000dfcdf)]
+	HRESULT OleRequestPendingMsgTitle([out, retval] BSTR* rhs);
+	[id(0x0001000c), propput, helpstring("Returns/sets title of 'busy' message displayed while an Automation request is pending."), helpcontext(0x000dfcdf)]
+	HRESULT OleRequestPendingMsgTitle([in] BSTR rhs);
+	[id(0x0001000d), propget, helpstring("Returns/sets text of 'busy' message displayed while an Automation request is pending."), helpcontext(0x000dfce0)]
+	HRESULT OleRequestPendingMsgText([out, retval] BSTR* rhs);
+	[id(0x0001000d), propput, helpstring("Returns/sets text of 'busy' message displayed while an Automation request is pending."), helpcontext(0x000dfce0)]
+	HRESULT OleRequestPendingMsgText([in] BSTR rhs);
+	[id(0x0001000e), propget, helpstring("Returns the major release number of the project."), helpcontext(0x000dfce1)]
+	HRESULT Major([out, retval] short* rhs);
+	[id(0x0001000f), propget, helpstring("Returns the minor release number of the project."), helpcontext(0x000dfce2)]
+	HRESULT Minor([out, retval] short* rhs);
+	[id(0x00010010), propget, helpstring("Returns the revision version number of the project."), helpcontext(0x000dfce3)]
+	HRESULT Revision([out, retval] short* rhs);
+	[id(0x00010011), propget, helpstring("Returns comments about the running application."), helpcontext(0x000dfce4)]
+	HRESULT Comments([out, retval] BSTR* rhs);
+	[id(0x00010012), propget, helpstring("Returns the name of the application's author."), helpcontext(0x000dfce5)]
+	HRESULT CompanyName([out, retval] BSTR* rhs);
+	[id(0x00010013), propget, helpstring("Returns a file description of the running application."), helpcontext(0x000dfce6)]
+	HRESULT FileDescription([out, retval] BSTR* rhs);
+	[id(0x00010014), propget, helpstring("Returns copyright information about the running application."), helpcontext(0x000dfce7)]
+	HRESULT LegalCopyright([out, retval] BSTR* rhs);
+	[id(0x00010015), propget, helpstring("Returns trademark information about the running application."), helpcontext(0x000dfce8)]
+	HRESULT LegalTrademarks([out, retval] BSTR* rhs);
+	[id(0x00010016), propget, helpstring("Returns the product name of the running application."), helpcontext(0x000dfce9)]
+	HRESULT ProductName([out, retval] BSTR* rhs);
+	[id(0x00010017), propget, helpstring("Returns the instance handle of the application."), helpcontext(0x000dfcec)]
+	HRESULT hInstance([out, retval] long* rhs);
+	[id(0x00010018), propget, helpstring("Returns a value which indicates if a form can be shown non-modally (modeless)."), helpcontext(0x000dfd01)]
+	HRESULT NonModalAllowed([out, retval] VARIANT_BOOL* rhs);
+	[id(0x00010019), propget, helpstring("Returns the filename for an application's log (if logging to a file)."), helpcontext(0x000dfd0c)]
+	HRESULT LogPath([out, retval] BSTR* rhs);
+	[id(0x0001001a), propget, helpstring("Returns a value that indicates the target (event log or log file) and other log attributes."), helpcontext(0x000dfd0d)]
+	HRESULT LogMode([out, retval] long* rhs);
+	[id(0x0001001b), propget, helpstring("Returns/sets a value that determines whether an application will run without any user interface."), helpcontext(0x000dfd0e)]
+	HRESULT UnattendedApp([out, retval] VARIANT_BOOL* rhs);
+	[id(0x0001001c), propget, helpstring("Returns the ID of the executing thread."), helpcontext(0x000dfd0f)]
+	HRESULT ThreadID([out, retval] long* rhs);
+	[id(0x0001001d), propget, helpstring("Returns/sets the name of the Help file associated with the project."), helpcontext(0x000dfc55)]
+	HRESULT HelpFile([out, retval] BSTR* rhs);
+	[id(0x0001001d), propput, helpstring("Returns/sets the name of the Help file associated with the project."), helpcontext(0x000dfc55)]
+	HRESULT HelpFile([in] BSTR rhs);
+	[id(0x0001001e), propget, helpstring("Returns/sets a value that determines whether a project will remain loaded in memory."), helpcontext(0x000dfd35)]
+	HRESULT RetainedProject([out, retval] VARIANT_BOOL* rhs);
+	[id(0x00020000), helpstring("Sets the log target and log mode for an application"), helpcontext(0x000dfac1)]
+	HRESULT StartLogging(
+		[in] BSTR LogTarget,
+		[in] long LogModes
+	);
+	[id(0x00020001), helpstring("Logs an event in the application's log target"), helpcontext(0x000dfac2)]
+	HRESULT LogEvent(
+		[in] BSTR LogBuffer,
+		[in] VARIANT EventType
+	);*/
+
+};

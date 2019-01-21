@@ -1,0 +1,76 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "vba_objApp.idl";
+
+[
+	uuid(fcfb3d22-a0fa-1068-a738-08002b3371b5), /* Original */
+	//uuid(40A859D6-F54A-4651-B6F0-A12A346EEC17), /* New */
+	helpstring("Open VBVM VB Global"),
+	helpcontext(0x000df65a)
+]
+interface IVBGlobal : IUnknown
+{
+	[helpstring("Loads a form or control into memory."), helpcontext(0x000df65b)]
+	HRESULT _stdcall Load([in] IDispatch* object);
+	[helpstring("Unloads a form or control from memory."), helpcontext(0x000df65c)]
+	HRESULT _stdcall Unload([in] IDispatch* object);
+	[propget, helpstring("Contains general information about an application."), helpcontext(0x000df65d)]
+	HRESULT _stdcall App([out, retval] IApp ** pdispRetVal);
+	/*[propget, helpstring("Manipulates forms according to their placement on the screen and controls the mouse pointer."), helpcontext(0x000df65e)]
+	HRESULT _stdcall Screen([out, retval] Screen#i** pdispRetVal);
+	[propget, helpstring("Provides access to the system Clipboard."), helpcontext(0x000df65f)]
+	HRESULT _stdcall Clipboard([out, retval] Clipboard#i** pdispRetVal);
+	[propget, helpstring("Enables you to communicate with a system printer (initially the default printer)."), helpcontext(0x000df660)]
+	HRESULT _stdcall Printer([out, retval] Printer#i** pdispRetVal);
+	[propputref, helpstring("Enables you to communicate with a system printer (initially the default printer)."), helpcontext(0x000df660)]
+	HRESULT _stdcall Printer([in] Printer#i* pdispRetVal);
+	[propget, helpstring("All loaded forms in an application."), helpcontext(0x000df661)]
+	HRESULT _stdcall Forms([out, retval] IDispatch** pdispRetVal);
+	[propget, helpstring("Enables you to gather information about all available printers on the system."), helpcontext(0x000df662)]
+	HRESULT _stdcall Printers([out, retval] IDispatch** pdispRetVal);
+	[restricted, hidden, helpstring("Loads a string from a resource (.RES) file and returns it as a property of a control."), helpcontext(0x000df663)]
+	HRESULT _stdcall LoadResStringOld(
+		[in] short id,
+		[out, retval] BSTR* pbstrRetVal
+	);
+	[helpstring("Loads a bitmap, icon, or cursor from a resource (.RES) file and returns it to the appropriate control."), helpcontext(0x000df664)]
+	HRESULT _stdcall LoadResPicture(
+		[in] VARIANT id,
+		[in] short restype,
+		[out, retval] IPictureDisp#i** retval
+	);
+	[helpstring("Loads data of several possible types from a resource file (.RES) and returns a Byte array."), helpcontext(0x000df665)]
+	HRESULT _stdcall LoadResData(
+		[in] VARIANT id,
+		[in] VARIANT type,
+		[out, retval] VARIANT* pbstrRetVal
+	);
+	[restricted, hidden, helpstring("Loads a graphic into a Form, PictureBox, or Image control."), helpcontext(0x000df666)]
+	HRESULT _stdcall LoadPictureOld(
+		[in, optional] VARIANT FileName,
+		[out, retval] IPictureDisp#i** retval
+	);
+	[helpstring("Saves a graphic from a Form, PictureBox, or Image control to a file."), helpcontext(0x000df667)]
+	HRESULT _stdcall SavePicture(
+		[in] IPictureDisp#i* Picture,
+		[in] BSTR FileName
+	);
+	[helpstring("Loads a graphic into a Form, PictureBox, or Image control."), helpcontext(0x000df666)]
+	HRESULT _stdcall LoadPicture(
+		[in, optional] VARIANT FileName,
+		[in, optional] VARIANT Size,
+		[in, optional] VARIANT ColorDepth,
+		[in, optional] VARIANT X,
+		[in, optional] VARIANT Y,
+		[out, retval] IPictureDisp#i** retval
+	);
+	[helpstring("Loads a string from a resource (.RES) file and returns it as a property of a control."), helpcontext(0x000df663)]
+	HRESULT _stdcall LoadResString(
+		[in] long id,
+		[out, retval] BSTR* pbstrRetVal
+	);
+	[propget, helpstring("Manipulates a collection of control licenses for use with Controls.Add."), helpcontext(0x000df95e)]
+	HRESULT _stdcall Licenses([out, retval] Licenses#i** ppRetVal);*/
+
+};

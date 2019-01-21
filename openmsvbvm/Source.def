@@ -1,0 +1,162 @@
+LIBRARY
+EXPORTS  
+
+	__vbaChkstk					@182
+
+	ThunRTMain					@100
+
+	_adj_fdiv_m16i				@659
+	_adj_fdiv_m32				@688
+	_adj_fdiv_m32i				@701
+	_adj_fdiv_m64				@718
+
+	_adj_fdiv_r					@719
+
+	_adj_fdivr_m16i				@720
+	_adj_fdivr_m32				@721
+	_adj_fdivr_m32i				@722
+	_adj_fdivr_m64				@723
+
+	_adj_fprem					@725
+	_adj_fprem1					@726
+
+	_CIatan						@156
+	_CIcos						@157
+	_CIexp						@158
+	_CIlog						@159
+	_CIsin						@160
+	_CIsqrt						@161
+	_CItan						@162
+
+	VarPtr						@644
+
+	
+	__vbaCyMul					@198
+	_allmul						@728
+
+; vba_InteractionFunctions.cpp
+	rtcChoose					@665
+	rtcShell					@600
+	rtcAppActivate				@597
+	rtcBeep						@534
+	rtcEnvironBstr				@667
+	rtcEnvironVar				@666
+	rtcImmediateIf				@681
+	rtcPartition				@664
+	rtcSendKeys					@599
+
+; vba_Settings.cpp
+	rtcSaveSetting				@690
+	rtcDeleteSetting			@691
+	rtcGetSetting				@689
+
+; vba_Arrays.cpp
+	__vbaAryDestruct			@167
+	__vbaGenerateBoundsError	@246
+	__vbaAryConstruct2			@164
+	__vbaErase					@213
+	__vbaRedim					@385
+	__vbaRedimPreserve			@386
+	__vbaGenerateBoundsError	@246
+	__vbaAryDestruct			@167
+	__vbaAryLock				@108
+	__vbaAryUnlock				@172
+	__vbaLbound					@325
+	__vbaUbound					@445
+
+; vba_DllFunctionCall.cpp
+	DllFunctionCall				@187
+
+; vba_DateManipulation.cpp
+   rtcGetPresentDate			@546
+   __vbaDateVar					@209
+
+; vba_exception.cpp
+	__vbaExitProc				@223
+	__vbaOnError				@352
+	__vbaExceptHandler			@218
+	__vbaFPException			@224
+	__vbaSetSystemError			@394
+
+; vba_File.cpp
+	__vbaFileClose				@229
+	__vbaFileOpen				@235
+	__vbaPut3					@357
+	__vbaGet3					@247
+	rtcFileLength				@570
+	__vbaFileSeek				@236
+
+; vba_varManipulation.cpp
+	__vbaVarCat					@452
+	rtcHexBstrFromVar			@572
+	rtcHexVarFromVar			@573
+	__vbaVarCopy				@143
+	__vbaVarDup					@144
+	__vbaVarMove				@145
+	__vbaFreeVar				@131
+	__vbaFreeVarList			@245
+
+; vba_objManipulation.cpp
+	__vbaFreeObj				@129
+	__vbaHresultCheckObj		@258
+	__vbaNew2					@340
+	__vbaNew					@341
+	__vbaFreeObjList			@243
+	rtcCreateObject2			@716
+	__vbaObjVar					@351
+	__vbaVarLateMemCallLdRf		@113
+	__vbaVarLateMemCallLd		@112
+	__vbaVarAdd					@450
+	__vbaVarAnd					@451
+	__vbaVarDiv					@460
+	__vbaVarEqv					@461
+	__vbaVarIdiv				@466
+	__vbaVarImp					@467
+	__vbaVarMod					@476
+	__vbaVarMul					@477
+	__vbaVarOr					@480
+	__vbaVarPow					@481
+	__vbaVarSub					@488
+	__vbaVarXor					@509
+	__vbaObjSet					@349
+	__vbaObjSetAddref			@350
+	__vbaCastObj				@178
+	EVENT_SINK_QueryInterface	@400
+	EVENT_SINK_Release			@402
+	EVENT_SINK_AddRef			@401
+
+; vba_CommandLine.cpp
+   rtcCommandBstr				@669
+   rtcCommandVar				@670
+
+; vba_InputBox.cpp
+	rtcInputBox					@596
+
+; vba_MessageBox.cpp
+	rtcMsgBox					@595
+
+; vba_strComparation.cpp
+	__vbaStrComp				@407
+
+; vba_strConversion.cpp
+   __vbaStrR8					@423
+   __vbaStrR4					@422
+   __vbaStrI4					@418
+   __vbaStrI2					@417
+   __vbaStrUI1					@428
+   __vbaStrBool					@399
+   __vbaStrCy					@409
+   __vbaStrDate					@415
+   __vbaStrToAnsi				@426
+
+; vba_strManipulation.cpp
+   rtcUpperCaseBstr				@527
+   rtcLowerCaseBstr				@517
+   rtcReplace					@712
+   __vbaStrCat					@405
+   __vbaStrMove					@139
+   __vbaFreeStr					@130
+   __vbaFreeStrList				@244
+   __vbaStrErrVarCopy			@111
+   __vbaStrVarCopy				@429
+   __vbaStrCopy					@138

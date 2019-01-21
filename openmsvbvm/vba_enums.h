@@ -1,0 +1,12 @@
+#pragma once
+
+typedef enum
+{
+	VB_FMODE_INPUT = 0x0001,
+	VB_FMODE_OUTPUT = 0x0002,
+	VB_FMODE_RANDOM = 0x0004,
+	VB_FMODE_BINARY = 0x0020,
+
+	VB_FMODE_ACCESS_WRITE = 0x0200,
+	VB_FMODE_ACCESS_READ = 0x0100,
+} vbaFileOpenMode;

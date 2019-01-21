@@ -13,24 +13,199 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de origen\String">
+      <UniqueIdentifier>{4f7e6775-5c4a-4130-82b8-e4e95a34d778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\InputBox">
+      <UniqueIdentifier>{2c77da8a-c0b4-456f-82d8-06716db6b34f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\ObjectInterface">
+      <UniqueIdentifier>{bf5360b6-6851-428d-a416-821b161a335d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Objects">
+      <UniqueIdentifier>{d5697d40-1356-459d-897f-004eaf830560}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Objects\VBGlobal">
+      <UniqueIdentifier>{e909f5bd-4a4f-4805-83e3-2e5cfc475c2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Objects\App">
+      <UniqueIdentifier>{0221a90a-5055-47e7-a567-0c1d1fb5027d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Variant">
+      <UniqueIdentifier>{491b344a-3ed1-4e1b-bbf4-4c2c3286a684}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\File">
+      <UniqueIdentifier>{5b7448b3-c642-4744-a705-f21049dc59c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\MessageBox">
+      <UniqueIdentifier>{7ba692a1-7c00-408f-9b18-5d3e81a3960a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\CommandLine">
+      <UniqueIdentifier>{a97f4288-2f83-479d-b115-0a952d6d1e8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Exceptions">
+      <UniqueIdentifier>{d126d7d0-5335-4ca6-b0ef-28c93bf48e42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\DateTime">
+      <UniqueIdentifier>{aa9f6b1d-443f-4afb-9937-9e81e3e8fa41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Interop">
+      <UniqueIdentifier>{fe6a04b3-275b-4072-9973-ecb71c10ee0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\VBA.Interaction">
+      <UniqueIdentifier>{c028aac2-9484-42c2-bd76-a65d062db6c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Arrays">
+      <UniqueIdentifier>{795107e9-9fc4-43d8-a11b-2d4b86f1ae6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Locale">
+      <UniqueIdentifier>{00ee610e-67d2-4e14-a88d-996ab32b8ccb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="openmsvbvm.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="vba_strConversion.cpp">
+      <Filter>Archivos de origen\String</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_strManipulation.cpp">
+      <Filter>Archivos de origen\String</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_strComparation.cpp">
+      <Filter>Archivos de origen\String</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_InputBox.cpp">
+      <Filter>Archivos de origen\InputBox</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_objManipulation.cpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_objVBGlobal.cpp">
+      <Filter>Archivos de origen\Objects\VBGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_objApp.cpp">
+      <Filter>Archivos de origen\Objects\App</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_objVBGlobal_i.c">
+      <Filter>Archivos de origen\Objects\VBGlobal</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_objApp_i.c">
+      <Filter>Archivos de origen\Objects\App</Filter>
+    </ClCompile>
+    <ClCompile Include="DllObjectInterface.cpp">
+      <Filter>Archivos de origen\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassFactory.cpp">
+      <Filter>Archivos de origen\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_varManipulation.cpp">
+      <Filter>Archivos de origen\Variant</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_File.cpp">
+      <Filter>Archivos de origen\File</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_MessageBox.cpp">
+      <Filter>Archivos de origen\MessageBox</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_CommandLine.cpp">
+      <Filter>Archivos de origen\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_exception.cpp">
+      <Filter>Archivos de origen\Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_DateManipulation.cpp">
+      <Filter>Archivos de origen\DateTime</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_DllFunctionCall.cpp">
+      <Filter>Archivos de origen\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_Settings.cpp">
+      <Filter>Archivos de origen\VBA.Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_InteractionFunctions.cpp">
+      <Filter>Archivos de origen\VBA.Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_Arrays.cpp">
+      <Filter>Archivos de origen\Arrays</Filter>
+    </ClCompile>
+    <ClCompile Include="vba_Locale.cpp">
+      <Filter>Archivos de origen\Locale</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vba_Locale.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_internal.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_internal_coordinates.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_objApp.h">
+      <Filter>Archivos de origen\Objects\App</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_objVBGlobal.h">
+      <Filter>Archivos de origen\Objects\VBGlobal</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassFactory.h">
+      <Filter>Archivos de origen\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_objVBGlobal_h.h">
+      <Filter>Archivos de origen\Objects\VBGlobal</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_objApp_h.h">
+      <Filter>Archivos de origen\Objects\App</Filter>
+    </ClInclude>
+    <ClInclude Include="DllObjectInterface.h">
+      <Filter>Archivos de origen\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_varManipulation.h">
+      <Filter>Archivos de origen\Variant</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_objManipulation.h">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_strManipulation.h">
+      <Filter>Archivos de origen\String</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_ole_bridge_macros.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_structures.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_enums.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_CommandLine.h">
+      <Filter>Archivos de origen\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="vba_exception.h">
+      <Filter>Archivos de origen\Exceptions</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Archivos de recursos</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vba_objVBGlobal.idl">
+      <Filter>Archivos de origen\Objects\VBGlobal</Filter>
+    </Midl>
+    <Midl Include="vba_objApp.idl">
+      <Filter>Archivos de origen\Objects\App</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source.def">
+      <Filter>Archivos de origen</Filter>
+    </None>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>
