@@ -1,6 +1,9 @@
 #include "vba_internal.h"
 #include "vba_exception.h"
 
+#include <vector>
+#include <mutex>
+
 /**
  * @brief			Convers a HRESULT code to VB's internal exception codes.
  * @param			hr			HRESULT code to convert.
@@ -136,9 +139,15 @@ CEXTERN void  vbaRaiseException(
 	);
 } /* vbaRaiseException */
 
+typedef struct
+{
+	DWORD			hThreadId;
+	DWORD			FS0;
+	int				iUnk1;
+} vbaOnErrorRegistredHandler;
 
-
-bool onerrorset = false;
+std::mutex g_tRegistredOnErrorHandlers_mutex;
+std::vector<vbaOnErrorRegistredHandler> g_tRegistredOnErrorHandlers;
 
 EXPORT int __stdcall __vbaExitProc(void)
 {
@@ -148,7 +157,23 @@ EXPORT int __stdcall __vbaExitProc(void)
 		"?"
 	);
 
-	onerrorset = false;
+	std::vector<vbaOnErrorRegistredHandler>::const_iterator cit;
+	{
+		std::unique_lock<std::mutex> lck(g_tRegistredOnErrorHandlers_mutex);
+
+		for (cit = g_tRegistredOnErrorHandlers.cbegin(); cit != g_tRegistredOnErrorHandlers.cend(); ++cit)
+		{
+			if (cit->hThreadId == ::GetCurrentThreadId())
+			{
+				DEBUG_WIDE(
+					"Found current thread id in the registred on error handlers vector, removing it!"
+				);
+
+				g_tRegistredOnErrorHandlers.erase(cit);
+				return 0;
+			}
+		}
+	}
 
 	return 0;
 } /* __vbaExitProc */
@@ -162,8 +187,28 @@ EXPORT int __stdcall __vbaOnError(int iUnk1)
 		(int)iUnk1
 	);
 
-	onerrorset = true;
+	std::vector<vbaOnErrorRegistredHandler>::const_iterator cit;
+	{
+		std::unique_lock<std::mutex> lck(g_tRegistredOnErrorHandlers_mutex);
 
+		for (cit = g_tRegistredOnErrorHandlers.cbegin(); cit != g_tRegistredOnErrorHandlers.cend(); ++cit)
+		{
+			if (cit->hThreadId == ::GetCurrentThreadId())
+			{
+				DEBUG_WIDE(
+					"Found current thread id in the registred on error handlers vector!"
+				);
+				return 0;
+			}
+		}
+	
+		vbaOnErrorRegistredHandler tNewHandler;
+
+		tNewHandler.hThreadId = ::GetCurrentThreadId();
+		tNewHandler.iUnk1 = iUnk1;
+
+		g_tRegistredOnErrorHandlers.push_back(tNewHandler);
+	}
 	return 0;
 } /* __vbaOnError */
 
@@ -234,97 +279,108 @@ EXPORT EXCEPTION_DISPOSITION __cdecl __vbaExceptHandler(
 		(unsigned int)ExceptionRecord->ExceptionFlags
 	);
 
-	// Temporary hack to handle OnError cases
-	if (onerrorset)// && !(ExceptionRecord->ExceptionCode & EXCEPTION_NONCONTINUABLE))
+	// Look in the registred OnErrorHandlers to check if an OnError was set
+	std::vector<vbaOnErrorRegistredHandler>::const_iterator cit;
 	{
-		vbaProcedureLocalStorage	* localStorage = (vbaProcedureLocalStorage*)EstablisherFrame;
+		std::unique_lock<std::mutex> lck(g_tRegistredOnErrorHandlers_mutex);
 
-		onerrorset = false;
-
-		if (!localStorage)
+		for (cit = g_tRegistredOnErrorHandlers.cbegin(); cit != g_tRegistredOnErrorHandlers.cend(); ++cit)
 		{
-			DEBUG_WIDE(
-				"localStorage == NULL, returning ExceptionContinueSearch"
-			);
-			return ExceptionContinueSearch;
-		}
-
-		DEBUG_WIDE(
-			"Jumping to VB On-Error Handler, ESP %.8x, u.pInfo %.8x",
-			(unsigned int)localStorage->ESP,
-			(unsigned int)localStorage->u.pInfo
-		);
-
-		/* Check if we have access to the ProcedureInfo struct and if it's on a valid memory location */
-		if (!localStorage->u.pInfo)
-		{
-			DEBUG_WIDE(
-				"u.pInfo == NULL, returning ExceptionContinueSearch"
-			);
-			return ExceptionContinueSearch;
-		}
-		if (IsBadReadPtr(localStorage->u.pInfo, sizeof(vbaProcedureInfo)))
-		{
-			DEBUG_WIDE(
-				"u.pInfo IsBadReadPtr!, returning ExceptionContinueSearch"
-			);
-			return ExceptionContinueSearch;
-		}
-
-		// This is a little bit of a magic thing, and I got most of this by just decompiling a dummy exe file
-		// We can restore the original EBP by obtainging the base EBP on this frame, and it's size.
-		ContextRecord->Ebp = (DWORD)(&localStorage->u.pEBPbase) + localStorage->u.pInfo->wFrameSize;
-		// Original ESP is saved on the localStorage structure.
-		ContextRecord->Esp = (DWORD)(localStorage->ESP);
-
-		if (localStorage->u.pInfo->wFlags & PROCEDURE_INFO_FLAG_ON_ERROR_SET)
-		{
-			/* If we have a on-error resume address, use it */
-			ContextRecord->Eip = (DWORD)(localStorage->u.pInfo->lpOnErrorInfo->lpOnErrorReturnAddress);
-
-			DEBUG_WIDE(
-				"On-Error resume address found, setting EBP to %.8x, ESP to %.8x, EIP to %.8x and returning",
-				ContextRecord->Ebp,
-				ContextRecord->Esp,
-				ContextRecord->Eip
-			);
-
-			// Check if the on-error resume address is able to run
-			if (IsBadCodePtr((FARPROC)ContextRecord->Eip))
+			if (cit->hThreadId == ::GetCurrentThreadId())
 			{
 				DEBUG_WIDE(
-					"ContextRecord->Eip IsBadCodePtr!, returning ExceptionContinueSearch"
+					"Found current thread id in the registred on error handlers vector, removing it!"
 				);
-				return ExceptionContinueSearch;
-			}
 
-			return ExceptionContinueExecution;
-		}
-		else
-		{
-			/* There's no resume address, so call the cleanup function */
-			ContextRecord->Eip = (DWORD)(localStorage->u.pInfo->lpSafeReturnAddr);
+				g_tRegistredOnErrorHandlers.erase(cit);
 
-			DEBUG_WIDE(
-				"No on-Error resume, setting EBP to %.8x, ESP to %.8x, EIP to %.8x and returning",
-				ContextRecord->Ebp,
-				ContextRecord->Esp,
-				ContextRecord->Eip
-			);
+				vbaProcedureLocalStorage	* localStorage = (vbaProcedureLocalStorage*)EstablisherFrame;
 
-			// Check if the cleanup function address is able to run
-			if (IsBadCodePtr((FARPROC)ContextRecord->Eip))
-			{
+				if (!localStorage)
+				{
+					DEBUG_WIDE(
+						"localStorage == NULL, returning ExceptionContinueSearch"
+					);
+					return ExceptionContinueSearch;
+				}
+
 				DEBUG_WIDE(
-					"ContextRecord->Eip IsBadCodePtr!, returning ExceptionContinueSearch"
+					"Jumping to VB On-Error Handler, ESP %.8x, u.pInfo %.8x",
+					(unsigned int)localStorage->ESP,
+					(unsigned int)localStorage->u.pInfo
 				);
-				return ExceptionContinueSearch;
-			}
 
-			return ExceptionContinueExecution;
+				/* Check if we have access to the ProcedureInfo struct and if it's on a valid memory location */
+				if (!localStorage->u.pInfo)
+				{
+					DEBUG_WIDE(
+						"u.pInfo == NULL, returning ExceptionContinueSearch"
+					);
+					return ExceptionContinueSearch;
+				}
+				if (IsBadReadPtr(localStorage->u.pInfo, sizeof(vbaProcedureInfo)))
+				{
+					DEBUG_WIDE(
+						"u.pInfo IsBadReadPtr!, returning ExceptionContinueSearch"
+					);
+					return ExceptionContinueSearch;
+				}
+
+				// This is a little bit of a magic thing, and I got most of this by just decompiling a dummy exe file
+				// We can restore the original EBP by obtainging the base EBP on this frame, and it's size.
+				ContextRecord->Ebp = (DWORD)(&localStorage->u.pEBPbase) + localStorage->u.pInfo->wFrameSize;
+				// Original ESP is saved on the localStorage structure.
+				ContextRecord->Esp = (DWORD)(localStorage->ESP);
+
+				if (localStorage->u.pInfo->wFlags & PROCEDURE_INFO_FLAG_ON_ERROR_SET)
+				{
+					/* If we have a on-error resume address, use it */
+					ContextRecord->Eip = (DWORD)(localStorage->u.pInfo->lpOnErrorInfo->lpOnErrorReturnAddress);
+
+					DEBUG_WIDE(
+						"On-Error resume address found, setting EBP to %.8x, ESP to %.8x, EIP to %.8x and returning",
+						ContextRecord->Ebp,
+						ContextRecord->Esp,
+						ContextRecord->Eip
+					);
+
+					// Check if the on-error resume address is able to run
+					if (IsBadCodePtr((FARPROC)ContextRecord->Eip))
+					{
+						DEBUG_WIDE(
+							"ContextRecord->Eip IsBadCodePtr!, returning ExceptionContinueSearch"
+						);
+						return ExceptionContinueSearch;
+					}
+
+					return ExceptionContinueExecution;
+				}
+				else
+				{
+					/* There's no resume address, so call the cleanup function */
+					ContextRecord->Eip = (DWORD)(localStorage->u.pInfo->lpSafeReturnAddr);
+
+					DEBUG_WIDE(
+						"No on-Error resume, setting EBP to %.8x, ESP to %.8x, EIP to %.8x and returning",
+						ContextRecord->Ebp,
+						ContextRecord->Esp,
+						ContextRecord->Eip
+					);
+
+					// Check if the cleanup function address is able to run
+					if (IsBadCodePtr((FARPROC)ContextRecord->Eip))
+					{
+						DEBUG_WIDE(
+							"ContextRecord->Eip IsBadCodePtr!, returning ExceptionContinueSearch"
+						);
+						return ExceptionContinueSearch;
+					}
+
+					return ExceptionContinueExecution;
+				}
+			}
 		}
 	}
-
 	return ExceptionContinueSearch;
 } /* __vbaExceptHandler */
 
