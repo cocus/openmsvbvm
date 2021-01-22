@@ -47,8 +47,8 @@ EXPORT int __stdcall __vbaStrComp(
 	result = VarBstrCmp(
 		bstrLeft,
 		bstrRight,
-		compare_method,
-		0x30001
+		0x30001,
+		compare_method
 	);
 
 	if (result >= 0)
