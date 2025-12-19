@@ -17,11 +17,6 @@ Private c_bTesting As Boolean
 
 Private c_sString As String
 
-'Public puto1 As Long
-'Public puto2 As Long
-
-'Private c_bTesting2 As Boolean
-
 'Private c_bTesting22 As Boolean
 'Private c_bTesting222 As Boolean
 

@@ -19,7 +19,7 @@ End Type
 Sub Main()
     'Call InitCommonControls
     
-    Call OnErrorGotoTest
+    'Call OnErrorGotoTest
     
     'Call OnErrorResumeNextTest
     
@@ -43,7 +43,7 @@ Sub Main()
     
     'Call ToStringConversionTest
     
-    'Call ObjectAppInteractionTest
+    Call ObjectAppInteractionTest
     
     'Call FileManipulationTest
     
@@ -175,15 +175,10 @@ End Sub
 Private Sub ClassCreationTest()
     Dim j As clsTestClass3
     Set j = New clsTestClass3
-    'j.Pelotudo True
-    'MsgBox "delay?"
-    'j.Exported2
-    'j.SetTrue
-    'j.Exported2
-    'j.SetFalse
-    'j.Exported2
-    
+
     j.SetString "TESTTTTTTTT!!!!!"
+    j.MsgboxString True
+    j.SetFalse
     j.MsgboxString True
     
     Set j = Nothing
@@ -258,8 +253,12 @@ Private Sub ObjectCreateTest()
 End Sub
 
 Private Sub ObjectAppInteractionTest()
-    MsgBox "App.Title = " & App.Title & vbCrLf & _
+    MsgBox "App.Comments = " & App.Comments & vbCrLf & _
+           "App.CompanyName = " & App.CompanyName & vbCrLf & _
            "App.EXEName = " & App.EXEName & vbCrLf & _
-           "App.Path = " & App.Path
+           "App.FileDescription = " & App.FileDescription & vbCrLf & _
+           "App.Revision = " & App.Revision & vbCrLf & _
+           "App.Title = " & App.Title
+           
 End Sub
 

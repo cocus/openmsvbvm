@@ -22,7 +22,7 @@ typedef struct
 class vbClassWrapper : IDispatch
 {
 public:
-	vbClassWrapper(vba_VBVTable * pWrapperVtable, TObjectInfoWithOptionals * pObjInfo);
+	vbClassWrapper(vba_VBVTable * pWrapperVtable, ObjectInfoWithOptional* pObjInfo);
 	~vbClassWrapper();
 
 	// IUnknown interface 
@@ -72,7 +72,7 @@ private:
 	long						m_nRefCount;   // for managing the reference count
 	int							* m_pVtable = nullptr;
 	vba_VBVTable				* m_pVBVTable = nullptr;
-	TObjectInfoWithOptionals	* m_pObjInfo = nullptr;
+	ObjectInfoWithOptional*		m_pObjInfo = nullptr;
 };
 
 
@@ -166,7 +166,7 @@ void vbClassWrapper::InvokeVB6Initialize()
 
 	typedef void(__stdcall * pInit)(vba_VBVTable * ths);
 
-	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->aEventLinkArray) + ((this->m_pObjInfo->iEventCount - 2));
+	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + ((this->m_pObjInfo->opt.wEventCount - 2));
 
 	if (pAddr == nullptr)
 	{
@@ -190,7 +190,7 @@ void vbClassWrapper::InvokeVB6Terminate()
 
 	typedef void(__stdcall * pInit)(vba_VBVTable * ths);
 
-	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->aEventLinkArray) + ((this->m_pObjInfo->iEventCount - 1));
+	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + ((this->m_pObjInfo->opt.wEventCount - 1));
 
 	if (pAddr == nullptr)
 	{
@@ -209,7 +209,7 @@ void vbClassWrapper::InvokeVB6Terminate()
 
 vbClassWrapper::vbClassWrapper(
 	vba_VBVTable				*pWrapperVtable,
-	TObjectInfoWithOptionals	*pObjInfo
+	ObjectInfoWithOptional*pObjInfo
 )
 	: m_nRefCount(1), m_pVBVTable(pWrapperVtable), m_pObjInfo(pObjInfo)
 {
@@ -410,7 +410,7 @@ EXPORT HRESULT __stdcall __vbaNew2(
  * @returns			Valid vba_VBVTable pointer on success, nullptr otherwise.
  */
 EXPORT vba_VBVTable * __stdcall __vbaNew(
-	TObjectInfoWithOptionals	* pvbNewData
+	ObjectInfoWithOptional* pvbNewData
 )
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
@@ -426,44 +426,44 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	}
 
 	DEBUG_WIDE(
-		"pvbNewData %.8x, pvbNewData->iEventCount %.8x, pvbNewData->hdr.aObjectHeader %.8x, pvbNewData->aBasicClassObject %.8x",
+		"pvbNewData %.8x, pvbNewData->iEventCount %.8x, pvbNewData->hdr.lpObject %.8x, pvbNewData->opt.lpBasicClassObject %.8x",
 		(unsigned int)pvbNewData,
-		(unsigned int)pvbNewData->iEventCount,
-		(unsigned int)pvbNewData->hdr.aObjectHeader,
-		(unsigned int)pvbNewData->aBasicClassObject
+		(unsigned int)pvbNewData->opt.wEventCount,
+		(unsigned int)pvbNewData->hdr.lpObject,
+		(unsigned int)pvbNewData->opt.lpBasicClassObject
 	);
 
-	if (!pvbNewData->hdr.aObjectHeader)
+	if (!pvbNewData->hdr.lpObject)
 	{
 		return nullptr;
 	}
 
-	TObject * tObj = (TObject*)(pvbNewData->hdr.aObjectHeader);
+	PublicObjectDescriptor * tObj = static_cast<PublicObjectDescriptor*>(pvbNewData->hdr.lpObject);
 	DEBUG_WIDE(
-		"tObj->aModulePublic %.8x, tObj->aModuleStatic %.8x, tObj->aPublicBytes %.8x, tObj->aStaticBytes %.8x, tObj->lMethodCount %.8x, tObj->oStaticVars %.8x",
-		(unsigned int)tObj->aModulePublic,
-		(unsigned int)tObj->aModuleStatic,
-		(unsigned int)tObj->aPublicBytes,
-		(unsigned int)tObj->aStaticBytes,
-		(unsigned int)tObj->lMethodCount,
-		(unsigned int)tObj->oStaticVars
+		"tObj->lpModulePublic %.8x, tObj->lpModuleStatic %.8x, tObj->lpPublicBytes %.8x, tObj->lpStaticBytes %.8x, tObj->dwMethodCount %.8x, tObj->bStaticVars %.8x",
+		(unsigned int)tObj->lpModulePublic,
+		(unsigned int)tObj->lpModuleStatic,
+		(unsigned int)tObj->lpPublicBytes,
+		(unsigned int)tObj->lpStaticBytes,
+		(unsigned int)tObj->dwMethodCount,
+		(unsigned int)tObj->bStaticVars
 	);
 
-	if (tObj->aPublicBytes == nullptr)
+	if (tObj->lpPublicBytes == nullptr)
 	{
 		return nullptr;
 	}
 
 	DEBUG_WIDE(
-		"tObj->aPublicBytes->iConst1 %.8x, tObj->aPublicBytes->iSize %.8x",
-		tObj->aPublicBytes->iConst1,
-		tObj->aPublicBytes->iSize
+		"tObj->lpPublicBytes->iConst1 %.8x, tObj->lpPublicBytes->iSize %.8x",
+		tObj->lpPublicBytes->iConst1,
+		tObj->lpPublicBytes->iSize
 	);
 
-	UINT uiVtableCount = pvbNewData->iEventCount;
+	UINT uiVtableCount = pvbNewData->opt.wEventCount;
 
 	/* pWrapperVTable is technically the "VB class" with it's functions after the IDispatch stuff */
-	void * pWrapperVtable = malloc(tObj->aPublicBytes->iSize);//sizeof(void*) * uiVtableCount);
+	void * pWrapperVtable = malloc(tObj->lpPublicBytes->iSize);//sizeof(void*) * uiVtableCount);
 	if (pWrapperVtable == nullptr)
 	{
 		return nullptr;
@@ -471,7 +471,7 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	memset(
 		pWrapperVtable,
 		0,
-		tObj->aPublicBytes->iSize//sizeof(void*) * uiVtableCount
+		tObj->lpPublicBytes->iSize//sizeof(void*) * uiVtableCount
 	);
 
 	/* Setup the bridgeStruct (IUnk-like that bridges VB's VTable to COM) */
@@ -488,12 +488,12 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	/* Copy the VB Specified vtable to the pWrapperVTable after bridgeStruct */
 	memcpy(
 		(void*)((unsigned int)pWrapperVtable + sizeof(vba_BASIC_CLASS_IUnknownBridge)),
-		pvbNewData->aEventLinkArray,
+		pvbNewData->opt.lpEvents,
 		sizeof(void*) * uiVtableCount
 	);
 
 	/* Setup a vba_VBVTable struct, which is what we'll return and it'll be what VB code will use as 'this' (i.e. also contains the local storage of the class) */
-	vba_VBVTable * ret = (vba_VBVTable*)malloc(sizeof(vba_VBVTable) + tObj->aPublicBytes->iSize);
+	vba_VBVTable * ret = (vba_VBVTable*)malloc(sizeof(vba_VBVTable) + tObj->lpPublicBytes->iSize);
 	if (ret == nullptr)
 	{
 		free(pWrapperVtable);
@@ -502,7 +502,7 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	memset(
 		ret,
 		0,
-		sizeof(vba_VBVTable) + tObj->aPublicBytes->iSize
+		sizeof(vba_VBVTable) + tObj->lpPublicBytes->iSize
 	);
 
 	ret->lpVBVtable = pWrapperVtable;
@@ -515,7 +515,7 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 		"ret %.8x, ret->lpVBVtable %.8x spans to %.8x, ret->pWrapper %.8x",
 		(unsigned int)ret,
 		(unsigned int)ret->lpVBVtable,
-		(unsigned int)ret->lpVBVtable + tObj->aPublicBytes->iSize,
+		(unsigned int)ret->lpVBVtable + tObj->lpPublicBytes->iSize,
 		(unsigned int)ret->pWrapper		
 	);
 
@@ -528,11 +528,11 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 
 	/* Call the Initialize method */
 	DEBUG_WIDE(
-		"pvbNewData->oInitializeEvent %.8x, pvbNewData->oTerminateEvent %.8x, pvbNewData->aEventLinkArray %.8x, pvbNewData->iEventCount %.8x",
-		pvbNewData->oInitializeEvent,
-		pvbNewData->oTerminateEvent,
-		(unsigned int)(void*)pvbNewData->aEventLinkArray,
-		pvbNewData->iEventCount
+		"pvbNewData->opt.bWInitializeEvent %.8x, pvbNewData->opt.bWTerminateEvent %.8x, pvbNewData->opt.lpEvents %.8x, pvbNewData->opt.wEventCount %.8x",
+		pvbNewData->opt.bWInitializeEvent,
+		pvbNewData->opt.bWTerminateEvent,
+		(unsigned int)(void*)pvbNewData->opt.lpEvents,
+		pvbNewData->opt.wEventCount
 	);
 
 	ret->pWrapper->InvokeVB6Initialize();
@@ -690,8 +690,8 @@ EXPORT void * __stdcall __vbaCastObj(
 
 	if (!piunkIn)
 	{
-		/* We don't have a IUnknown pointer, so ... */
-		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR); // TODO: Check this exception
+		/* We don't have a IUnknown pointer, so return nothing? */
+		return ppvObject;
 	}
 	else
 	{

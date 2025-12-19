@@ -8,42 +8,193 @@ public:
 	~CApp();
 
 	// IUnknown interface 
-	HRESULT __stdcall QueryInterface(
+	HRESULT STDMETHODCALLTYPE QueryInterface(
 		REFIID riid,
 		void **ppObj);
 	ULONG   __stdcall AddRef();
 	ULONG   __stdcall Release();
 
 	// IDispatch interface
-	HRESULT __stdcall GetTypeInfoCount(UINT * pctInfo);
-	HRESULT __stdcall GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo** pptinfo);
-	HRESULT __stdcall GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid);
-	HRESULT __stdcall Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr);
+	HRESULT STDMETHODCALLTYPE GetTypeInfoCount(UINT * pctInfo);
+	HRESULT STDMETHODCALLTYPE GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo** pptinfo);
+	HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid);
+	HRESULT STDMETHODCALLTYPE Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr);
 
 	// Unknown exported stuff
-	HRESULT _stdcall HctlDemandLoad(unsigned int * ctl);
-	HRESULT _stdcall ChkProp(unsigned int i,  unsigned int * tagData);
-	HRESULT _stdcall SetPropA( unsigned int i,  unsigned int * tagData);
-	HRESULT _stdcall GetPropA( unsigned int i,  unsigned int * tagData);
-	HRESULT _stdcall GetPropHsz( unsigned int i, unsigned char ** hsz);
-	HRESULT _stdcall LoadProp( unsigned int i,  unsigned int * fref);
-	HRESULT _stdcall SaveProp( unsigned int i,  unsigned int * fref);
-	HRESULT _stdcall GetPalette(void);
-	HRESULT _stdcall Reset(void);
-	HRESULT _stdcall get_DefaultProp( VARIANT * var);
-	HRESULT _stdcall put_DefaultProp( VARIANT * var);
-	HRESULT _stdcall get_000x( VARIANT * var);
-	HRESULT _stdcall put_000x( unsigned int i);
+	HRESULT STDMETHODCALLTYPE HctlDemandLoad(unsigned int * ctl);
+	HRESULT STDMETHODCALLTYPE ChkProp(unsigned int i,  unsigned int * tagData);
+	HRESULT STDMETHODCALLTYPE SetPropA( unsigned int i,  unsigned int * tagData);
+	HRESULT STDMETHODCALLTYPE GetPropA( unsigned int i,  unsigned int * tagData);
+	HRESULT STDMETHODCALLTYPE GetPropHsz( unsigned int i, unsigned char ** hsz);
+	HRESULT STDMETHODCALLTYPE LoadProp( unsigned int i,  unsigned int * fref);
+	HRESULT STDMETHODCALLTYPE SaveProp( unsigned int i,  unsigned int * fref);
+	HRESULT STDMETHODCALLTYPE GetPalette(void);
+	HRESULT STDMETHODCALLTYPE Reset(void);
+	HRESULT STDMETHODCALLTYPE get_DefaultProp( VARIANT * var);
+	HRESULT STDMETHODCALLTYPE put_DefaultProp( VARIANT * var);
+	HRESULT STDMETHODCALLTYPE get_000x( VARIANT * var);
+	HRESULT STDMETHODCALLTYPE put_000x( unsigned int i);
 
 	// IApp interface
-	HRESULT __stdcall get_Path(BSTR* rhs);
-	HRESULT __stdcall put_Path(BSTR rhs);
+	HRESULT STDMETHODCALLTYPE get_Path(BSTR* rhs);
+	HRESULT STDMETHODCALLTYPE put_Path(BSTR rhs);
 
-	HRESULT __stdcall get_EXEName(BSTR* rhs);
-	HRESULT __stdcall put_EXEName(BSTR rhs);
+	HRESULT STDMETHODCALLTYPE get_EXEName(BSTR* rhs);
+	HRESULT STDMETHODCALLTYPE put_EXEName(BSTR rhs);
 
-	HRESULT __stdcall get_Title(BSTR* rhs);
-	HRESULT __stdcall put_Title(BSTR rhs);
+	HRESULT STDMETHODCALLTYPE get_Title(BSTR* rhs);
+	HRESULT STDMETHODCALLTYPE put_Title(BSTR rhs);
+
+	HRESULT STDMETHODCALLTYPE get_PrevInstance(VARIANT_BOOL* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing27(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_StartMode(
+        /* [retval][out] */ short* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing29(void) { return E_NOTIMPL; }
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_TaskVisible( 
+        /* [retval][out] */ VARIANT_BOOL *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_TaskVisible( 
+        /* [in] */ VARIANT_BOOL rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleServerBusyTimeout( 
+        /* [retval][out] */ long *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleServerBusyTimeout( 
+        /* [in] */ long rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleServerBusyMsgTitle( 
+        /* [retval][out] */ BSTR *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleServerBusyMsgTitle( 
+        /* [in] */ BSTR rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleServerBusyMsgText( 
+        /* [retval][out] */ BSTR *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleServerBusyMsgText( 
+        /* [in] */ BSTR rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleServerBusyRaiseError( 
+        /* [retval][out] */ VARIANT_BOOL *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleServerBusyRaiseError( 
+        /* [in] */ VARIANT_BOOL rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleRequestPendingTimeout( 
+        /* [retval][out] */ long *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleRequestPendingTimeout( 
+        /* [in] */ long rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleRequestPendingMsgTitle( 
+        /* [retval][out] */ BSTR *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleRequestPendingMsgTitle( 
+        /* [in] */ BSTR rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OleRequestPendingMsgText( 
+        /* [retval][out] */ BSTR *rhs);
+        
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_OleRequestPendingMsgText( 
+        /* [in] */ BSTR rhs);
+        
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Major(
+        /* [retval][out] */ short* rhs);
+
+	/* [helpstring] */ HRESULT __stdcall Missing47(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Minor(
+        /* [retval][out] */ short* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing49(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Revision(
+        /* [retval][out] */ short* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing51(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Comments(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing53(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_CompanyName(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing55(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_FileDescription(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing57(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_LegalCopyright(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing59(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_LegalTrademarks(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing61(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_ProductName(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing63(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_hInstance(
+        /* [retval][out] */ long* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing65(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_NonModalAllowed(
+        /* [retval][out] */ VARIANT_BOOL* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing67(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_LogPath(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing69(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_LogMode(
+        /* [retval][out] */ long* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing71(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_UnattendedApp(
+        /* [retval][out] */ VARIANT_BOOL* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing73(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_ThreadID(
+        /* [retval][out] */ long* rhs);
+
+    /* [helpstring] */ HRESULT __stdcall Missing75(void) { return E_NOTIMPL; }
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_HelpFile(
+        /* [retval][out] */ BSTR* rhs);
+
+    /* [helpcontext][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_HelpFile(
+        /* [in] */ BSTR rhs);
+
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_RetainedProject(
+        /* [retval][out] */ VARIANT_BOOL* rhs);
+
+    /* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE StartLogging(
+        /* [in] */ BSTR LogTarget,
+        /* [in] */ long LogModes);
+
+    /* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE LogEvent(
+        /* [in] */ BSTR LogBuffer,
+        /* [in] */ VARIANT EventType);
+
+
 
 private:
 	long m_nRefCount;   // for managing the reference count

@@ -5,7 +5,6 @@ import "vba_objApp.idl";
 
 [
 	uuid(fcfb3d22-a0fa-1068-a738-08002b3371b5), /* Original */
-	//uuid(40A859D6-F54A-4651-B6F0-A12A346EEC17), /* New */
 	helpstring("Open VBVM VB Global"),
 	helpcontext(0x000df65a)
 ]

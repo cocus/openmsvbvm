@@ -15,7 +15,7 @@ GUID CLSID_VBGlobal =	{ 0xfcfb3d23, 0xa0fa, 0x1068, { 0xa7, 0x38, 0x08, 0x00, 0x
 GUID CLSID_App =		{ 0xfcfb3d23, 0xa0fa, 0x1068, { 0xa7, 0x38, 0x08, 0x00, 0x2b, 0x33, 0x71, 0xb5 } }; // TODO: Fix this GUID
 
 
-STDAPI DllCanUnloadNow(void)
+STDAPI  DllCanUnloadNow(void)
 {
 	HRESULT rc = E_UNEXPECTED;
 
@@ -33,29 +33,48 @@ STDAPI DllCanUnloadNow(void)
 CMasterFactory factory;
 
 STDAPI DllGetClassObject(
-	const CLSID&	clsid,
-	const IID&		iid,
-	void			**ppv
+	_In_ REFCLSID rclsid,
+	_In_ REFIID riid,
+	_Outptr_ LPVOID FAR* ppv
 )
 {
 	HRESULT rc = CLASS_E_CLASSNOTAVAILABLE;
 
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	if (clsid == CLSID_VBGlobal)
+	if (rclsid == CLSID_VBGlobal)
 	{
 		DEBUG_WIDE(
 			"clsid == CLSID_VBGlobal"
 		);
-		rc = factory.CreateInstance(nullptr, iid, ppv);
+		rc = factory.CreateInstance(nullptr, riid, ppv);
 	}
-	else if (clsid == CLSID_App)
+	else if (rclsid == CLSID_App)
 	{
 		DEBUG_WIDE(
 			"clsid == CLSID_App"
 		);
-		rc = factory.CreateInstance(nullptr, iid, ppv);
+		rc = factory.CreateInstance(nullptr, riid, ppv);
 	}
 
 	return rc;
 };
+
+STDAPI VBDllGetClassObject(
+	_In_ HMODULE* phModule,
+	int lReserved,
+	_In_ struct VBHeader* pVBHeader, 
+	_In_ REFCLSID rclsid,
+	_In_ REFIID riid,
+	_Outptr_ LPVOID FAR* ppv
+)
+{
+	return CLASS_E_CLASSNOTAVAILABLE;
+}
+
+STDAPI VBDllCanUnloadNow(
+	struct VBHeader *pNewVBHeader
+)
+{
+	return S_FALSE;
+}

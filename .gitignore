@@ -262,3 +262,5 @@ __pycache__/
 
 openmsvbvm/[Dd]ebug/
 openmsvbvm/[Rr]elease/
+Debug/msvbvm60*
+Debug/openmsvbvm*

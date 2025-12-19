@@ -160,3 +160,10 @@ EXPORTS
    __vbaStrErrVarCopy			@111
    __vbaStrVarCopy				@429
    __vbaStrCopy					@138
+
+; DllObjectInterface.cpp
+  DllGetClassObject				@155 PRIVATE
+  VBDllGetClassObject			@104
+  DllCanUnloadNow				@154 PRIVATE
+  VBDllCanUnloadNow				@102
+  
