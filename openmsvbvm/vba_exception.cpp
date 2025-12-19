@@ -132,6 +132,7 @@ CEXTERN void  vbaRaiseException(
 	);
 
 	RaiseException(
+		/* TODO: translate vb exceptions to NT exceptions */
 		exceptionCode,
 		0,
 		0,
@@ -332,7 +333,7 @@ EXPORT EXCEPTION_DISPOSITION __cdecl __vbaExceptHandler(
 				// Original ESP is saved on the localStorage structure.
 				ContextRecord->Esp = (DWORD)(localStorage->ESP);
 
-				if (localStorage->u.pInfo->wFlags & PROCEDURE_INFO_FLAG_ON_ERROR_SET)
+				if ((localStorage->u.pInfo->wFlags & PROCEDURE_INFO_FLAG_ON_ERROR_SET) && localStorage->u.pInfo->lpOnErrorInfo)
 				{
 					/* If we have a on-error resume address, use it */
 					ContextRecord->Eip = (DWORD)(localStorage->u.pInfo->lpOnErrorInfo->lpOnErrorReturnAddress);
@@ -385,46 +386,44 @@ EXPORT EXCEPTION_DISPOSITION __cdecl __vbaExceptHandler(
 } /* __vbaExceptHandler */
 
 /**
- * @brief			Raises a VB error depending on the FPU exception type.
- * @param			fp_status		FPU status word.
- */
-__declspec(naked) void __fastcall _FpExcecption(
-	int			fp_status
-)
-{
-	/* Stack Error */
-	if (fp_status & 0x40)
-	{
-		vbaRaiseException(VBA_EXCEPTION_EXPRESSION_TOO_COMPLEX);
-	}
-	/* Divide by zero */
-	else if (fp_status & 0x04)
-	{
-		vbaRaiseException(VBA_EXCEPTION_DIVISION_BY_ZERO);
-	}
-	/* Overflow */
-	else if (fp_status & 0x08)
-	{
-		vbaRaiseException(VBA_EXCEPTION_OVERFLOW);
-	}
-	/* Default case */
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
-	}
-} /* _FpExcecption */
-
-/**
  * @brief			FP exception handler.
  * @remark			Stores the FPU status and jumps into _FpException.
  */
-EXPORT __declspec(naked) void __fastcall __vbaFPException(void)
+#pragma fenv_access(on)
+EXPORT void __fastcall __vbaFPException(void)
 {
-	__asm
+	unsigned int fp_status;
+	_statusfp2(&fp_status, NULL);
+
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+	DEBUG_WIDE(
+		"statusfp = %d", fp_status
+	);
+
+	while(true)
 	{
-		fnstsw ax				/* Store FPU status word in AX register after checking for pending unmasked floating-point exceptions.*/
-		jmp _FpExcecption
+		/* Stack Error */
+		if (fp_status & _SW_INVALID)
+		{
+			vbaRaiseException(VBA_EXCEPTION_EXPRESSION_TOO_COMPLEX);
+		}
+		/* Divide by zero */
+		else if (fp_status & _SW_ZERODIVIDE)
+		{
+			vbaRaiseException(VBA_EXCEPTION_DIVISION_BY_ZERO);
+		}
+		/* Overflow */
+		else if (fp_status & _SW_OVERFLOW)
+		{
+			vbaRaiseException(VBA_EXCEPTION_OVERFLOW);
+		}
+		/* Default case */
+		else
+		{
+			vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
+		}
 	}
+
 } /* __vbaFPException */
 
 /**

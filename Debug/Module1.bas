@@ -19,7 +19,7 @@ End Type
 Sub Main()
     'Call InitCommonControls
     
-    'Call OnErrorGotoTest
+    Call OnErrorGotoTest
     
     'Call OnErrorResumeNextTest
     
@@ -43,7 +43,7 @@ Sub Main()
     
     'Call ToStringConversionTest
     
-    Call ObjectAppInteractionTest
+    'Call ObjectAppInteractionTest
     
     'Call FileManipulationTest
     
@@ -120,23 +120,22 @@ End Sub
 
 Private Sub OnErrorGotoTest()
     On Error GoTo fnErrHandler
-    'On Error Resume Next
     MsgBox "This should happen"
     MsgBox 1 / 0
 fnNonErrHandler:
     MsgBox "This should not be visible"
 fnErrHandler:
-    MsgBox "OnErrorTest() end"
+    MsgBox "OnErrorGotoTest() end"
 End Sub
 
 Private Sub OnErrorResumeNextTest()
-    'On Error Resume Next
+    On Error Resume Next
     MsgBox "This should happen"
     MsgBox 1 / 0
 fnNonErrHandler:
     MsgBox "This should not be visible"
 fnErrHandler:
-    MsgBox "OnErrorTest() end"
+    MsgBox "OnErrorResumeNextTest() end"
 End Sub
 
 Private Sub MsgboxReturnCodeTest()
@@ -257,6 +256,12 @@ Private Sub ObjectAppInteractionTest()
            "App.CompanyName = " & App.CompanyName & vbCrLf & _
            "App.EXEName = " & App.EXEName & vbCrLf & _
            "App.FileDescription = " & App.FileDescription & vbCrLf & _
+           "App.LegalCopyright = " & App.LegalCopyright & vbCrLf & _
+           "App.LegalTrademarks = " & App.LegalTrademarks & vbCrLf & _
+           "App.Major = " & App.Major & vbCrLf & _
+           "App.Minor = " & App.Minor & vbCrLf & _
+           "App.Path = " & App.Path & _
+           "App.ProductName = " & App.ProductName & vbCrLf & _
            "App.Revision = " & App.Revision & vbCrLf & _
            "App.Title = " & App.Title
            

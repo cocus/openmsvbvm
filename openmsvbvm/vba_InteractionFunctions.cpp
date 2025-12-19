@@ -100,6 +100,7 @@ EXPORT void __stdcall rtcChoose(
 	if (!(fIndex >= 0.0 && fIndex < 2147483600.0))
 	{
 		// TODO: Raise an exception?
+		vbaRaiseException(VBA_EXCEPTION_INVALID_USE_OF_NULL);
 		return;
 	}
 
