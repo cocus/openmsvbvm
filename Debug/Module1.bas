@@ -11,7 +11,7 @@ Private Declare Sub InitCommonControls Lib "comctl32" ()
 
 Private Type tTest
     sString         As String
-    'sFixedString    As String * 30
+    sFixedString    As String * 30
     lLong           As Long
     iInteger        As Integer
 End Type
@@ -19,9 +19,9 @@ End Type
 Sub Main()
     'Call InitCommonControls
     
-    Call OnErrorGotoTest
+    'Call OnErrorGotoTest
     
-    'Call OnErrorResumeNextTest
+    Call OnErrorResumeNextTest
     
     'Call FPExceptionTest
     
@@ -57,6 +57,8 @@ Sub Main()
     
     'Call llmul
     
+    'Call ClassEventTest
+    
     Debug.Print "ASD"
     
     MsgBox "END"
@@ -72,20 +74,20 @@ Private Sub llmul()
     'MsgBox c
 End Sub
 Private Sub ArraysTest()
-    'Dim strArray() As String
-    'ReDim strArray(36)
-    'strArray(0) = "One"
-    'strArray(1) = "Two"
-    'strArray(2) = "Three"
-    'ReDim Preserve strArray(69)
-    'strArray(3) = "Four"
-    'MsgBox strArray(3)
-    'MsgBox "UBound() = " & UBound(strArray) & " - LBound() = " & LBound(strArray)
+    Dim strArray() As String
+    ReDim strArray(36)
+    strArray(0) = "One"
+    strArray(1) = "Two"
+    strArray(2) = "Three"
+    ReDim Preserve strArray(69)
+    strArray(3) = "Four"
+    MsgBox strArray(3)
+    MsgBox "UBound() = " & UBound(strArray) & " - LBound() = " & LBound(strArray)
     
     
     Dim tUDTArray(30) As tTest
     'ReDim tUDTArray(30)
-    'tUDTArray(0).sFixedString = "HAHAHA"
+    tUDTArray(0).sFixedString = "ABCDEF"
     With tUDTArray(0)
         .lLong = &HC0C0C0C0
         .sString = "string"
@@ -94,6 +96,7 @@ Private Sub ArraysTest()
     With tUDTArray(0)
         MsgBox "tUDTArray(0)" & vbCrLf & _
                 vbTab & ".sString = '" & .sString & "'" & vbCrLf & _
+                vbTab & ".sFixedString = '" & .sFixedString & "'" & vbCrLf & _
                 vbTab & ".lLong = " & Hex(.lLong)
     End With
 End Sub
@@ -129,13 +132,13 @@ fnErrHandler:
 End Sub
 
 Private Sub OnErrorResumeNextTest()
+    Dim l As Integer
+    'Dim o As Object
     On Error Resume Next
-    MsgBox "This should happen"
-    MsgBox 1 / 0
-fnNonErrHandler:
-    MsgBox "This should not be visible"
-fnErrHandler:
-    MsgBox "OnErrorResumeNextTest() end"
+    'o.test
+    MsgBox "This shouldn't ve visible " & 1 / 0
+    
+    MsgBox "This should be visible"
 End Sub
 
 Private Sub MsgboxReturnCodeTest()
@@ -260,10 +263,16 @@ Private Sub ObjectAppInteractionTest()
            "App.LegalTrademarks = " & App.LegalTrademarks & vbCrLf & _
            "App.Major = " & App.Major & vbCrLf & _
            "App.Minor = " & App.Minor & vbCrLf & _
-           "App.Path = " & App.Path & _
+           "App.Path = " & App.Path & vbCrLf & _
            "App.ProductName = " & App.ProductName & vbCrLf & _
            "App.Revision = " & App.Revision & vbCrLf & _
            "App.Title = " & App.Title
            
 End Sub
 
+Private Sub ClassEventTest()
+    Dim objClass2 As clsTestClass2
+    Set objClass2 = New clsTestClass2
+    objClass2.Raise "This is ClassEventTest()"
+    Set objClass2 = Nothing
+End Sub

@@ -1,19 +1,6 @@
 #pragma once
 #include "vba_internal.h"
 
-
-typedef struct
-{
-	IUnknown			*piunkPtr;
-	LPGUID				lpguidCoClass;
-	LPGUID				lpguidInterface;
-	unsigned int		dummy2;
-} vba_new_data_arg_t;
-
-EXPORT void __stdcall __vbaHresultCheckObj(
-	int a1, int a2, struct _GUID *a3, __int16 a4
-);
-
 /**
 * @brief			Frees a list of COM Objects (IUnknowns) via their pointers, and nulls them.
 * @param			argCount		Count of elements.
@@ -29,7 +16,7 @@ EXPORT void __cdecl __vbaFreeObjList(
  * @param			TBD
  * @returns			TBD
  */
-EXPORT IUnknown * __fastcall __vbaFreeObj(
+EXPORT void __fastcall __vbaFreeObj(
 	IUnknown	** punkObj
 );
 
@@ -86,15 +73,6 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 	VARIANTARG *pvargObject,
 	BSTR bstrClassName,
 	BSTR bstrServerName
-);
-/**
- * @brief			TBD
- * @param			TBD
- * @returns			TBD
- */
-EXPORT HRESULT __stdcall __vbaNew2(
-	vba_new_data_arg_t		*pvbNewData,
-	struct IUnknown			**ppv
 );
 
 HRESULT objIDispatchGetDefaultValue(

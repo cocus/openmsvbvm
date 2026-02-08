@@ -1,10 +1,11 @@
 LIBRARY
 EXPORTS  
 
-	__vbaChkstk					@182
-
+; dllmain.cpp
 	ThunRTMain					@100
+	VarPtr						@644
 
+; FloatingPointHelpers.cpp
 	_adj_fdiv_m16i				@659
 	_adj_fdiv_m32				@688
 	_adj_fdiv_m32i				@701
@@ -28,11 +29,9 @@ EXPORTS
 	_CIsqrt						@161
 	_CItan						@162
 
-	VarPtr						@644
-
-	
 	__vbaCyMul					@198
 	_allmul						@728
+	__vbaFpI2					@124
 
 ; vba_InteractionFunctions.cpp
 	rtcChoose					@665
@@ -77,6 +76,8 @@ EXPORTS
 	__vbaExceptHandler			@218
 	__vbaFPException			@224
 	__vbaSetSystemError			@394
+	__vbaErrorOverflow			@217
+	__vbaChkstk					@182
 
 ; vba_File.cpp
 	__vbaFileClose				@229
@@ -99,7 +100,6 @@ EXPORTS
 ; vba_objManipulation.cpp
 	__vbaFreeObj				@129
 	__vbaHresultCheckObj		@258
-	__vbaNew2					@340
 	__vbaNew					@341
 	__vbaFreeObjList			@243
 	rtcCreateObject2			@716
@@ -122,8 +122,16 @@ EXPORTS
 	__vbaObjSetAddref			@350
 	__vbaCastObj				@178
 	EVENT_SINK_QueryInterface	@400
-	EVENT_SINK_Release			@402
 	EVENT_SINK_AddRef			@401
+	EVENT_SINK_Release			@402
+	EVENT_SINK_GetIDsOfNames	@403
+	EVENT_SINK_Invoke			@404
+	__vbaRaiseEvent				@379
+	Zombie_GetTypeInfo			@434
+	Zombie_GetTypeInfoCount		@433
+	GetMemEvent					@319
+	PutMemEvent					@320
+	SetMemEvent					@321
 
 ; vba_CommandLine.cpp
    rtcCommandBstr				@669
@@ -160,10 +168,13 @@ EXPORTS
    __vbaStrErrVarCopy			@111
    __vbaStrVarCopy				@429
    __vbaStrCopy					@138
+   __vbaLsetFixstr				@333
+   __vbaStrFixstr				@416
 
 ; DllObjectInterface.cpp
-  DllGetClassObject				@155 PRIVATE
-  VBDllGetClassObject			@104
-  DllCanUnloadNow				@154 PRIVATE
-  VBDllCanUnloadNow				@102
+	__vbaNew2					@340
+	DllGetClassObject			@155 PRIVATE
+	VBDllGetClassObject			@104
+	DllCanUnloadNow				@154 PRIVATE
+	VBDllCanUnloadNow			@102
   

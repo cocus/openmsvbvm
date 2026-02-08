@@ -1,13 +1,11 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
 #include "vba_Locale.h"
-#include "vba_objManipulation.h"
-#include "DllObjectInterface.h"
+#include "ObjectManipulation.hpp"
+#include "DllObjectInterface.hpp"
 
 #include "vba_structures.h"
-
-
 
 typedef struct
 {
@@ -15,9 +13,6 @@ typedef struct
 	unsigned int			lNull;
 	class vbClassWrapper	* pWrapper;
 } vba_VBVTable;
-
-
-
 
 class vbClassWrapper : IDispatch
 {
@@ -296,7 +291,6 @@ HRESULT __stdcall vbClassWrapper::Invoke(
 	return E_NOTIMPL;
 }
 
-
 /**
  * @brief			TBD
  * @param			TBD
@@ -318,91 +312,7 @@ EXPORT void __stdcall __vbaHresultCheckObj(
 		(unsigned int)arg3,
 		(unsigned int)arg4
 	);
-}
-
-extern GUID CLSID_VBGlobal;
-extern GUID CLSID_App;
-
-/**
- * @brief			Instantiates a new COM object via it's CoClass and Interface, if specified.
- * @param			pvbNewData		Pointer to a VB defined structure with info about the object.
- * @param			ppv				Pointer to an IUnknown pointer, where the created object will be stored.
- * @returns			HRESULT of the operation.
- */
-EXPORT HRESULT __stdcall __vbaNew2(
-	vba_new_data_arg_t		* pvbNewData,
-	IUnknown				** ppv
-)
-{
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
-
-	DEBUG_WIDE(
-		"pvbNewData %.8x, reval %.8x",
-		(unsigned int)pvbNewData,
-		(unsigned int)ppv
-	);
-
-	if (pvbNewData->lpguidCoClass)
-	{
-		DEBUG_WIDE_GUID(*pvbNewData->lpguidCoClass, "CoClass");
-	}
-
-	if (pvbNewData->lpguidInterface)
-	{
-		DEBUG_WIDE_GUID(*pvbNewData->lpguidInterface, "Interface");
-	}
-
-	HRESULT hr;
-
-	/* Check if the required CLSID is one of the internal VB CLSIDs */
-	if (*pvbNewData->lpguidCoClass == CLSID_VBGlobal)
-	{
-		DEBUG_WIDE(
-			"Got VBGlobal CoClass, using internal class"
-		);
-
-		hr = DllGetClassObject(
-			*pvbNewData->lpguidCoClass,
-			*pvbNewData->lpguidInterface,
-			(LPVOID*)ppv
-		);
-
-		DEBUG_WIDE(
-			"DllGetClassObject ret %.8x",
-			hr
-		);
-
-		if (hr != S_OK)
-		{
-			vbaRaiseException(VBA_EXCEPTION_COMPONENT_CANT_CREATE_OBJECT_OR_RETURN_REFERENCE_TO_THIS_OBJECT);
-			return hr;
-		}
-	}
-	else
-	{
-		/* Create instance from the specified CoClass GUID */
-		hr = CoCreateInstance(
-			*pvbNewData->lpguidCoClass,
-			nullptr,
-			CLSCTX_INPROC_SERVER,
-			*pvbNewData->lpguidInterface,
-			(LPVOID*)ppv
-		);
-
-		DEBUG_WIDE(
-			"CoCreateInstance ret %.8x",
-			hr
-		);
-
-		if (hr != S_OK)
-		{
-			vbaRaiseException(VBA_EXCEPTION_COMPONENT_CANT_CREATE_OBJECT_OR_RETURN_REFERENCE_TO_THIS_OBJECT);
-			return hr;
-		}
-	}
-
-	return hr;
-}
+} /* __vbaHresultCheckObj */
 
 /**
  * @brief			Constructs a wrapper object for a VB6 class, and instantiates that class.
@@ -461,6 +371,15 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	);
 
 	UINT uiVtableCount = pvbNewData->opt.wEventCount;
+
+	if (tObj->lpPublicBytes->iSize < sizeof(vba_BASIC_CLASS_IUnknownBridge))
+	{
+		DEBUG_WIDE(
+			"Public bytes size %.8x is too small for the bridge struct and the specified vtable count!",
+			tObj->lpPublicBytes->iSize
+		);
+		return nullptr;
+	}
 
 	/* pWrapperVTable is technically the "VB class" with it's functions after the IDispatch stuff */
 	void * pWrapperVtable = malloc(tObj->lpPublicBytes->iSize);//sizeof(void*) * uiVtableCount);
@@ -538,21 +457,14 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	ret->pWrapper->InvokeVB6Initialize();
 
 	return ret;
-}
-
-
-
-
-
-
-
+} /* __vbaNew */
 
 /**
  * @brief			TBD
  * @param			TBD
  * @returns			TBD
  */
-EXPORT HRESULT  __stdcall EVENT_SINK_AddRef(
+EXPORT HRESULT __stdcall EVENT_SINK_AddRef(
 	void			*arg1
 )
 {
@@ -564,14 +476,14 @@ EXPORT HRESULT  __stdcall EVENT_SINK_AddRef(
 	);
 
 	return E_NOTIMPL;
-}
+} /* EVENT_SINK_AddRef */
 
 /**
  * @brief			TBD
  * @param			TBD
  * @returns			TBD
  */
-EXPORT HRESULT  __stdcall EVENT_SINK_Release(
+EXPORT HRESULT __stdcall EVENT_SINK_Release(
 	void			*arg1
 )
 {
@@ -583,14 +495,14 @@ EXPORT HRESULT  __stdcall EVENT_SINK_Release(
 	);
 
 	return E_NOTIMPL;
-}
+} /* EVENT_SINK_Release */
 
 /**
  * @brief			TBD
  * @param			TBD
  * @returns			TBD
  */
-EXPORT HRESULT  __stdcall EVENT_SINK_QueryInterface(
+EXPORT HRESULT __stdcall EVENT_SINK_QueryInterface(
 	void			*arg1,
 	REFIID			arg2,
 	void			**ppvObject
@@ -606,7 +518,163 @@ EXPORT HRESULT  __stdcall EVENT_SINK_QueryInterface(
 	);
 
 	return E_NOTIMPL;
-}
+} /* EVENT_SINK_QueryInterface */
+
+/**
+ * @brief			TBD
+ * @param			TBD
+ * @returns			TBD
+ */
+EXPORT HRESULT __stdcall EVENT_SINK_GetIDsOfNames(
+	OLECHAR			*strIn,
+	DWORD			unk1,
+	DWORD			unk2,
+	DWORD			unk3,
+	DWORD			unk4,
+	DWORD			unk5
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"?"
+	);
+
+	return E_NOTIMPL;
+} /* EVENT_SINK_GetIDsOfNames */
+
+/**
+ * @brief			TBD
+ * @param			TBD
+ * @returns			TBD
+ */
+EXPORT HRESULT __stdcall EVENT_SINK_Invoke(
+	DWORD			*unk1,
+	DWORD			unk2,
+	DWORD			unk3,
+	DWORD			unk4,
+	DWORD			unk5,
+	DWORD			unk6,
+	DWORD			unk7,
+	DWORD			unk8,
+	DWORD			unk9
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"?"
+	);
+
+	return E_NOTIMPL;
+} /* EVENT_SINK_Invoke */
+
+EXPORT HRESULT __stdcall Zombie_GetTypeInfo(
+	DWORD			unk1,
+	DWORD			unk2,
+	DWORD			unk3,
+	DWORD			unk4
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"?"
+	);
+
+	return RPC_E_SERVER_DIED;
+} /* Zombie_GetTypeInfo */
+
+EXPORT HRESULT __stdcall Zombie_GetTypeInfoCount(
+	DWORD			unk1,
+	DWORD			unk2
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"?"
+	);
+
+	return RPC_E_SERVER_DIED;
+} /* Zombie_GetTypeInfoCount */
+
+// https://bbs-vbstreets-ru.translate.goog/viewtopic.php?f=1&t=56212&start=0&hilit=GetMemObj&_x_tr_sch=http&_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=sc
+
+EXPORT int __stdcall GetMemEvent(
+	DWORD			unk1,
+	DWORD			unk2,
+	struct IDispatch** pidObject,
+	struct IDispatch* vtable
+)
+{
+
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		""
+	);
+
+	return E_NOTIMPL;
+} /* GetMemEvent */
+
+EXPORT int __stdcall PutMemEvent(
+	DWORD			unk1,
+	DWORD			unk2,
+	struct IDispatch** pidObject,
+	struct IDispatch* vtable
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		""
+	);
+
+	// This calls PutMemObj internally, with the pidObject and vtable args.
+	// Declare Function PutMemObj Lib "msvbvm60" (ByVal pDst As Long, ByRef NewObj As Object) As Long
+
+	return E_NOTIMPL;
+} /* PutMemEvent */
+
+EXPORT int __stdcall SetMemEvent(
+	DWORD			unk1,
+	DWORD			unk2,
+	struct IDispatch** pidObject,
+	struct IDispatch* vtable
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		""
+	);
+
+	return E_NOTIMPL;
+} /* SetMemEvent */
+
+EXPORT HRESULT __vbaRaiseEvent(
+	DWORD			unk1,
+	DWORD			unk2,
+	int				argCount,
+	...
+)
+{
+	va_list args;
+
+	va_start(args, argCount);
+
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"argCount = %d",
+		argCount
+	);
+
+	va_end(args);
+
+	return E_NOTIMPL;
+} /* __vbaRaiseEvent */
 
 /**
  * @brief			Releases the ref of the destination IUnknown pointer (if not null), and sets it
@@ -636,7 +704,7 @@ EXPORT IUnknown * __stdcall __vbaObjSet(
 	*ppiuDest = piuSrc;
 
 	return *ppiuDest;
-}
+} /* __vbaObjSet */
 
 /**
  * @brief			Releases the ref of the destination IUnknown pointer (if not null), and sets it
@@ -664,7 +732,7 @@ EXPORT IUnknown * __stdcall __vbaObjSetAddref(
 	}
 
 	return __vbaObjSet(ppiuDest, piuSrc);
-}
+} /* __vbaObjSetAddref */
 
 /**
  * @brief			Gets a pointer to a specified interface from an IUnknown (if exists).
@@ -723,7 +791,7 @@ EXPORT void * __stdcall __vbaCastObj(
 	}
 
 	return ppvObject;
-}
+} /* __vbaCastObj */
 
 /**
  * @brief			Creates a COM object from a specified class name.
@@ -805,7 +873,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 	pvargObject->pdispVal = disp;
 
 	return hr;
-}
+} /* rtcCreateObject2 */
 
 /**
  * @brief			Returns a pointer to an IDispatch from a VARIANTARG.
@@ -858,7 +926,7 @@ EXPORT IDispatch * __stdcall __vbaObjVar(
 		return nullptr;
 	}
 	return ret;
-}
+} /* __vbaObjVar */
 
 /**
  * @brief			Invokes a method of an IDispatch object, with no return value.
@@ -964,7 +1032,7 @@ EXPORT void __cdecl __vbaLateMemCall(
 
 		vbaRaiseException(VBA_EXCEPTION_AUTOMATION_ERROR); // TODO: Check if this exception is right
 	}
-}
+} /* __vbaLateMemCall */
 
 /**
  * @brief			Invokes a method of a Variant object, and returns the return value of the invoke.
@@ -1098,7 +1166,7 @@ EXPORT VARIANTARG * __cdecl __vbaVarLateMemCallLdRf(
 	}
 
 	return pvargRet;
-}
+} /* __vbaVarLateMemCallLdRf */
 
 /**
  * @brief			TBD
@@ -1161,7 +1229,7 @@ HRESULT objIDispatchGetDefaultValue(
 	}
 
 	return hr;
-}
+} /* objIDispatchGetDefaultValue */
 
 /**
  * @brief			TBD
@@ -1185,14 +1253,14 @@ EXPORT VARIANTARG * __cdecl __vbaVarLateMemCallLd(
 	va_list args;
 	va_start(args, argCount);
 	return __vbaVarLateMemCallLdRf(pvargRet, pvarObject, bstrMethodName, argCount, args);
-}
+} /* __vbaVarLateMemCallLd */
 
 /**
  * @brief			Releases a COM Object (IUnknown) via its pointer, and nulls it.
  * @param			ppunkObj		Pointer to an object to release, and null the pointer.
  * @returns			Dereferenced object of ppunkObj.
  */
-EXPORT IUnknown * __fastcall __vbaFreeObj(
+EXPORT void __fastcall __vbaFreeObj(
 	IUnknown		** punkObj
 )
 {
@@ -1216,9 +1284,7 @@ EXPORT IUnknown * __fastcall __vbaFreeObj(
 			*(unsigned int*)punkObj = 0;
 		}
 	}
-
-	return *punkObj;
-}
+} /* __vbaFreeObj */
 
 /**
  * @brief			Releases a list of COM Objects (IUnknowns) via their pointers, and nulls them.
@@ -1250,4 +1316,4 @@ EXPORT void __cdecl __vbaFreeObjList(
 	}
 
 	va_end(args);
-}
+} /* __vbaFreeObjList */

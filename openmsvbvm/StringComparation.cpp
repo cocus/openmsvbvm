@@ -1,5 +1,6 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
+#include "vba_Locale.h"
 
 /**
  * @brief			Compares two BSTRs using OLE's VarBstrCmp .
@@ -47,7 +48,7 @@ EXPORT int __stdcall __vbaStrComp(
 	result = VarBstrCmp(
 		bstrLeft,
 		bstrRight,
-		0x30001,
+		getUserLocale(),
 		compare_method
 	);
 

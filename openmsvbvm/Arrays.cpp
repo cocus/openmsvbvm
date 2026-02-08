@@ -1,10 +1,10 @@
 #include "vba_internal.h"
 
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
-#include "vba_strManipulation.h"
-#include "vba_objManipulation.h"
-#include "vba_varManipulation.h"
+#include "StringManipulation.hpp"
+#include "ObjectManipulation.hpp"
+#include "VariantManipulation.hpp"
 
 
 
@@ -258,7 +258,7 @@ EXPORT void __stdcall __vbaAryDestruct(
 	SAFEARRAY		** ppSafeArray
 )
 {
-	if (!*ppSafeArray)
+	if (!ppSafeArray || !*ppSafeArray)
 	{
 		return;
 	}
@@ -396,7 +396,7 @@ EXPORT void __cdecl __vbaRedim(
 		}
 		else
 		{
-			vtArrayVarType = (VARTYPE)lpArgument; // ?
+			vtArrayVarType = reinterpret_cast<VARTYPE>(lpArgument); // ?
 		}
 
 		// Allocate the descriptor for this SafeArray with given vartype

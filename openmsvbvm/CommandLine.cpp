@@ -1,5 +1,5 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
 // TODO: Make this thread-dependant?
 static BSTR m_bstrCommandLine;

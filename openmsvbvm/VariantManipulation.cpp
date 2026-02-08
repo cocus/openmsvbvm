@@ -1,10 +1,10 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 #include "vba_Locale.h"
 
-#include "vba_varManipulation.h"
-#include "vba_strManipulation.h"
-#include "vba_objManipulation.h"
+#include "VariantManipulation.hpp"
+#include "StringManipulation.hpp"
+#include "ObjectManipulation.hpp"
 
 #include "vba_ole_bridge_macros.h"
 
@@ -286,7 +286,7 @@ EXPORT VARIANTARG * __fastcall __vbaVarDup(
 	VARIANTARG		*pvargSrc
 )
 {
-	VARIANTARG		vargLocalDeRef;
+	VARIANTARG		vargLocalDeRef{};
 
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -363,8 +363,6 @@ EXPORT VARIANTARG * __fastcall __vbaVarMove (
 	VARIANTARG		*pvargSrc
 )
 {
-	DEBUG_DECLARE_ASCII_BUFFER_IF_NEEDED();
-
 	/* Free the destination VARIANTARG */
 	__vbaFreeVar(pvargDest);
 
@@ -478,10 +476,13 @@ EXPORT void __fastcall __vbaFreeVar(
 	else
 	{
 		DEBUG_ASCII("pvargVariant->vt & VT_BYREF => calling VariantClear");
-		VariantClear(pvargVariant);
+		//VariantClear(pvargVariant);
 	}
 
 	pvargVariant->vt = VT_EMPTY;
+	
+	DEBUG_ASCII("pvargVariant->vt is now %d", pvargVariant->vt);
+
 } /* __vbaFreeVar */
 
 /**

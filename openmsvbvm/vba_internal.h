@@ -23,7 +23,7 @@
 #define DEBUG_ASCII_OBJ(fmt, ...)					snprintf(debugA, DEBUG_STORAGE_SIZE - 1, "%s(%.8x): " fmt "\n", __FUNCTION__, (unsigned long)this, __VA_ARGS__); OutputDebugStringA(debugA);
 #define DEBUG_WIDE(fmt, ...)						swprintf(debugW, DEBUG_STORAGE_SIZE - 1, L"%s: " L##fmt  "\n", WIDE_FUNCTION, __VA_ARGS__); OutputDebugStringW(debugW);
 #define DEBUG_WIDE_OBJ(fmt, ...)					swprintf(debugW, DEBUG_STORAGE_SIZE - 1, L"%s(%.8x): " L##fmt  "\n", WIDE_FUNCTION, (unsigned long)this, __VA_ARGS__); OutputDebugStringW(debugW);
-#define DEBUG_WIDE_GUID(guid, prepend)				{ OLECHAR* guidString; StringFromCLSID(guid, &guidString); DEBUG_WIDE(prepend ": %ls\n", guidString); CoTaskMemFree(guidString); }
+#define DEBUG_WIDE_GUID(guid, prepend)				{ OLECHAR* guidString; if (StringFromCLSID(guid, &guidString) != E_OUTOFMEMORY) { DEBUG_WIDE(prepend ": %ls\n", guidString); CoTaskMemFree(guidString); } }
 
 
 

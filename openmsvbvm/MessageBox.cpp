@@ -1,7 +1,10 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
-#include "vba_strManipulation.h"
+#include "StringManipulation.hpp"
+
+// TODO: Make proper declaration of this
+extern void GetVBProjectTitle(BSTR* rhs);
 
 /**
  * @brief			VB's message box implementation.
@@ -36,7 +39,7 @@ EXPORT int __stdcall rtcMsgBox(
 
 	if (!title)
 	{
-		title = SysAllocString(L"<openmsvbvm.dll>");
+		GetVBProjectTitle(&title);
 	}
 	if (!message)
 	{

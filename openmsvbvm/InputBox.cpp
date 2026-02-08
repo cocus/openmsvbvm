@@ -1,9 +1,9 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 #include "resource.h"
 #include <Windows.h>
 
-#include "vba_strManipulation.h"
+#include "StringManipulation.hpp"
 
 typedef struct
 {

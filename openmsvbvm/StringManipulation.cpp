@@ -1,18 +1,18 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
 #include <cstring>
 #include <string>
 
-#include "vba_objManipulation.h"
-#include "vba_varManipulation.h"
+#include "ObjectManipulation.hpp"
+#include "VariantManipulation.hpp"
 
 /**
  * @brief			Gets the string length of a BSTR.
  * @param			bstrIn				Input string.
  * @returns			Size of the string if the BSTR is valid, 0 otherwise.
  */
-unsigned int __stdcall strSafeGetLength(
+UINT __stdcall strSafeGetLength(
 	BSTR			bstrIn
 )
 {
@@ -372,6 +372,44 @@ EXPORT BSTR __stdcall __vbaStrVarCopy(
 {
 	return __vbaStrErrVarCopy(pvargIn);
 } /* __vbaStrVarCopy */
+
+/**
+ * @brief			Copies a BSTR to a fixed size buffer, right padding with spaces if needed.
+ * @param			uiFixedSize		Size of the fixed buffer, in wide characters.
+ * @param			lptstrDest		Where the source BSTR value will be copied to. Must be at least uiFixedSize + 1 in size.
+ * @param			bstrIn			Source BSTR.
+ */
+EXPORT void __stdcall __vbaLsetFixstr(
+	UINT			uiFixedSize,
+	LPWSTR			lptstrDest,
+	BSTR			bstrIn)
+{
+	wchar_t buffer[40] = { 0 };
+	// Create a format string for swprintf to right pad the input string with spaces until the fixed size.
+	swprintf(buffer, 39, L"%%-%ds", uiFixedSize);
+	// Now do the format
+	swprintf(lptstrDest, uiFixedSize + 1, buffer, bstrIn);
+} /* __vbaLsetFixstr */
+
+/**
+ * @brief			Creates a BSTR from a fixed size buffer.
+ * @param			ui				Size of the fixed buffer, in wide characters.
+ * @param			strIn			Buffer to copy into the BSTR. Must be at least ui in size.
+ * @returns			Result BSTR, exception on error.
+ */
+EXPORT BSTR __stdcall __vbaStrFixstr(
+	UINT			ui,
+	OLECHAR			*strIn)
+{
+	BSTR result = SysAllocStringLen(strIn, ui);
+
+	if (!result)
+	{
+		vbaRaiseException(VBA_EXCEPTION_OUT_OF_STRING_SPACE);
+	}
+
+	return result;
+} /* __vbaStrFixstr */
 
 /**
  * @brief			Frees a BSTR via its pointer, and nulls it.

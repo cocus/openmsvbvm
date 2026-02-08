@@ -271,3 +271,11 @@ struct serDllTemplate
 	struct struct_v5 *ptrStruct_v5;
 };
 
+typedef struct
+{
+	DWORD				flags;
+	LPCLSID				lpguidCoClass;
+	LPGUID				lpguidInterface;
+	unsigned int		dummy2;
+} vba_new_data_arg_t;
+static_assert(sizeof(vba_new_data_arg_t) == 0x10, "vba_new_data_arg_t size is incorrect");

@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0628 */
 /* at Tue Jan 19 00:14:07 2038
  */
-/* Compiler settings for vba_objVBGlobal.idl:
+/* Compiler settings for VBGlobal.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0628 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -35,8 +35,8 @@
 #include "ole2.h"
 #endif /*COM_NO_WINDOWS_H*/
 
-#ifndef __vba_objVBGlobal_h_h__
-#define __vba_objVBGlobal_h_h__
+#ifndef __VBGlobal_h__
+#define __VBGlobal_h__
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -52,36 +52,48 @@
 
 /* Forward Declarations */ 
 
-#ifndef __IVBGlobal_FWD_DEFINED__
-#define __IVBGlobal_FWD_DEFINED__
-typedef interface IVBGlobal IVBGlobal;
+#ifndef __Global_FWD_DEFINED__
+#define __Global_FWD_DEFINED__
 
-#endif 	/* __IVBGlobal_FWD_DEFINED__ */
+#ifdef __cplusplus
+typedef class Global Global;
+#else
+typedef struct Global Global;
+#endif /* __cplusplus */
+
+#endif 	/* __Global_FWD_DEFINED__ */
+
+
+#ifndef __VBGlobal_FWD_DEFINED__
+#define __VBGlobal_FWD_DEFINED__
+typedef interface VBGlobal VBGlobal;
+
+#endif 	/* __VBGlobal_FWD_DEFINED__ */
 
 
 /* header files for imported files */
 #include "oaidl.h"
 #include "ocidl.h"
-#include "vba_objApp.h"
+#include "App.h"
 
 #ifdef __cplusplus
 extern "C"{
 #endif 
 
 
-#ifndef __IVBGlobal_INTERFACE_DEFINED__
-#define __IVBGlobal_INTERFACE_DEFINED__
+#ifndef __VBGlobal_INTERFACE_DEFINED__
+#define __VBGlobal_INTERFACE_DEFINED__
 
-/* interface IVBGlobal */
+/* interface VBGlobal */
 /* [object][helpcontext][helpstring][uuid] */ 
 
 
-EXTERN_C const IID IID_IVBGlobal;
+EXTERN_C const IID IID_VBGlobal;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
     MIDL_INTERFACE("fcfb3d22-a0fa-1068-a738-08002b3371b5")
-    IVBGlobal : public IUnknown
+    VBGlobal : public IUnknown
     {
     public:
         virtual /* [helpcontext][helpstring] */ HRESULT __stdcall Load( 
@@ -91,53 +103,53 @@ EXTERN_C const IID IID_IVBGlobal;
             /* [in] */ IDispatch *object) = 0;
         
         virtual /* [helpcontext][helpstring][propget] */ HRESULT __stdcall get_App( 
-            /* [retval][out] */ IApp **pdispRetVal) = 0;
+            /* [retval][out] */ _App **pdispRetVal) = 0;
         
     };
     
     
 #else 	/* C style interface */
 
-    typedef struct IVBGlobalVtbl
+    typedef struct VBGlobalVtbl
     {
         BEGIN_INTERFACE
         
         DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IVBGlobal * This,
+            VBGlobal * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
         DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IVBGlobal * This);
+            VBGlobal * This);
         
         DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
-            IVBGlobal * This);
+            VBGlobal * This);
         
-        DECLSPEC_XFGVIRT(IVBGlobal, Load)
+        DECLSPEC_XFGVIRT(VBGlobal, Load)
         /* [helpcontext][helpstring] */ HRESULT ( __stdcall *Load )( 
-            IVBGlobal * This,
+            VBGlobal * This,
             /* [in] */ IDispatch *object);
         
-        DECLSPEC_XFGVIRT(IVBGlobal, Unload)
+        DECLSPEC_XFGVIRT(VBGlobal, Unload)
         /* [helpcontext][helpstring] */ HRESULT ( __stdcall *Unload )( 
-            IVBGlobal * This,
+            VBGlobal * This,
             /* [in] */ IDispatch *object);
         
-        DECLSPEC_XFGVIRT(IVBGlobal, get_App)
+        DECLSPEC_XFGVIRT(VBGlobal, get_App)
         /* [helpcontext][helpstring][propget] */ HRESULT ( __stdcall *get_App )( 
-            IVBGlobal * This,
-            /* [retval][out] */ IApp **pdispRetVal);
+            VBGlobal * This,
+            /* [retval][out] */ _App **pdispRetVal);
         
         END_INTERFACE
-    } IVBGlobalVtbl;
+    } VBGlobalVtbl;
 
-    interface IVBGlobal
+    interface VBGlobal
     {
-        CONST_VTBL struct IVBGlobalVtbl *lpVtbl;
+        CONST_VTBL struct VBGlobalVtbl *lpVtbl;
     };
 
     
@@ -145,23 +157,23 @@ EXTERN_C const IID IID_IVBGlobal;
 #ifdef COBJMACROS
 
 
-#define IVBGlobal_QueryInterface(This,riid,ppvObject)	\
+#define VBGlobal_QueryInterface(This,riid,ppvObject)	\
     ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
-#define IVBGlobal_AddRef(This)	\
+#define VBGlobal_AddRef(This)	\
     ( (This)->lpVtbl -> AddRef(This) ) 
 
-#define IVBGlobal_Release(This)	\
+#define VBGlobal_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IVBGlobal_Load(This,object)	\
+#define VBGlobal_Load(This,object)	\
     ( (This)->lpVtbl -> Load(This,object) ) 
 
-#define IVBGlobal_Unload(This,object)	\
+#define VBGlobal_Unload(This,object)	\
     ( (This)->lpVtbl -> Unload(This,object) ) 
 
-#define IVBGlobal_get_App(This,pdispRetVal)	\
+#define VBGlobal_get_App(This,pdispRetVal)	\
     ( (This)->lpVtbl -> get_App(This,pdispRetVal) ) 
 
 #endif /* COBJMACROS */
@@ -172,7 +184,7 @@ EXTERN_C const IID IID_IVBGlobal;
 
 
 
-#endif 	/* __IVBGlobal_INTERFACE_DEFINED__ */
+#endif 	/* __VBGlobal_INTERFACE_DEFINED__ */
 
 
 /* Additional Prototypes for ALL interfaces */

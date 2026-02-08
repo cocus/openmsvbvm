@@ -3,7 +3,7 @@
 #include "vba_internal.h"
 #include "vba_exception.h"
 
-HRESULT _stdcall CVBGlobal::Load(IDispatch * object)
+HRESULT STDMETHODCALLTYPE CVBGlobal::Load(IDispatch * object)
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -11,7 +11,7 @@ HRESULT _stdcall CVBGlobal::Load(IDispatch * object)
 	return E_NOTIMPL;
 }
 
-HRESULT _stdcall CVBGlobal::Unload(IDispatch * object)
+HRESULT STDMETHODCALLTYPE CVBGlobal::Unload(IDispatch * object)
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -20,7 +20,7 @@ HRESULT _stdcall CVBGlobal::Unload(IDispatch * object)
 	return E_NOTIMPL;
 }
 
-HRESULT _stdcall CVBGlobal::get_App(IApp ** pdispRetVal)
+HRESULT STDMETHODCALLTYPE CVBGlobal::get_App(IApp ** pdispRetVal)
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -31,7 +31,7 @@ HRESULT _stdcall CVBGlobal::get_App(IApp ** pdispRetVal)
 }
 
 
-HRESULT __stdcall CVBGlobal::QueryInterface(
+HRESULT STDMETHODCALLTYPE CVBGlobal::QueryInterface(
 	REFIID riid,
 	void **ppObj
 )
@@ -62,7 +62,7 @@ HRESULT __stdcall CVBGlobal::QueryInterface(
 	return E_NOINTERFACE;
 }
 
-ULONG __stdcall CVBGlobal::AddRef()
+ULONG STDMETHODCALLTYPE CVBGlobal::AddRef()
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -71,7 +71,7 @@ ULONG __stdcall CVBGlobal::AddRef()
 	return InterlockedIncrement(&m_nRefCount);
 }
 
-ULONG __stdcall CVBGlobal::Release()
+ULONG STDMETHODCALLTYPE CVBGlobal::Release()
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 

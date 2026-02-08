@@ -128,6 +128,10 @@ typedef enum
 } vbaExceptions;
 
 
+#define VB_MAGIC_EXCEPTION_CODE 0xC000008F
+#define VB_EXCEPTION_ARGUMENTS 0xdeadcafe, 0xdeadcafe
+#define VB_EXCEPTION_NUMBER_OF_ARGUMENTS 2
+
 void __stdcall RaiseExceptionIfLastErrorIsSet();
 
 CEXTERN vbaExceptions __stdcall vbaErrorFromHRESULT(

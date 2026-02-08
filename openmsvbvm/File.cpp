@@ -1,5 +1,5 @@
 #include "vba_internal.h"
-#include "vba_exception.h"
+#include "Exceptions.hpp"
 
 #include <cstring>
 #include <string>
@@ -7,8 +7,8 @@
 
 #include "vba_enums.h"
 
-#include "vba_objManipulation.h"
-#include "vba_varManipulation.h"
+#include "ObjectManipulation.hpp"
+#include "VariantManipulation.hpp"
 
 class vbaFileAbstraction
 {

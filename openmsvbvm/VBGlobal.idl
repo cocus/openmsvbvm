@@ -1,0 +1,32 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// This is the CoClass definition for the VBGlobal object
+[
+    uuid(FCFB3D23-A0FA-1068-A738-08002B3371B5),
+    helpstring(" "),
+    helpcontext(0x000df65a),
+    appobject
+]
+coclass Global {
+    [default] interface VBGlobal;
+};
+
+// Bring in the _App interface
+import "App.idl";
+
+// This is the Interface definition for the VBGlobal object
+[
+	uuid(fcfb3d22-a0fa-1068-a738-08002b3371b5),
+	helpstring("Open VBVM VB Global"),
+	helpcontext(0x000df65a)
+]
+interface VBGlobal : IUnknown
+{
+	[helpstring("Loads a form or control into memory."), helpcontext(0x000df65b)]
+	HRESULT _stdcall Load([in] IDispatch* object);
+	[helpstring("Unloads a form or control from memory."), helpcontext(0x000df65c)]
+		HRESULT _stdcall Unload([in] IDispatch* object);
+	[propget, helpstring("Contains general information about an application."), helpcontext(0x000df65d)]
+		HRESULT _stdcall App([out, retval] _App** pdispRetVal);
+};
