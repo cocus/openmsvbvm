@@ -32,6 +32,9 @@ EXPORTS
 	__vbaCyMul					@198
 	_allmul						@728
 	__vbaFpI2					@124
+	__vbaUI1I2					@140
+	_adj_fptan					@727
+	_adj_fpatan					@724
 
 ; vba_InteractionFunctions.cpp
 	rtcChoose					@665

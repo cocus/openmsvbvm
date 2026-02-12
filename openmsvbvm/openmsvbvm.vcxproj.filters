@@ -200,6 +200,6 @@
     <None Include="Source.def">
       <Filter>Archivos de origen</Filter>
     </None>
-    <None Include="README.md" />
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>

@@ -224,7 +224,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
     <ClCompile Include="App.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
+    <None Include="..\README.md" />
     <None Include="Source.def" />
   </ItemGroup>
   <ItemGroup>
