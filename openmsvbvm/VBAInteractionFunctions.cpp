@@ -206,22 +206,30 @@ EXPORT BSTR __stdcall rtcEnvironBstr(
 		}
 		else
 		{
-			bstrRet = SysAllocStringLen(
-				NULL,
+			wchar_t* buffer = new wchar_t[dwSize];
+
+			if (!buffer)
+			{
+				vbaRaiseException(VBA_EXCEPTION_OUT_OF_MEMORY);
+				return NULL;
+			}
+
+			dwSize = GetEnvironmentVariableW(
+				bstrEnvName,
+				buffer,
 				dwSize
 			);
+
+			bstrRet = SysAllocStringLen(
+				buffer,
+				dwSize
+			);
+
+			delete buffer;
 
 			if (!bstrRet)
 			{
 				vbaRaiseException(VBA_EXCEPTION_OUT_OF_STRING_SPACE);
-			}
-			else
-			{
-				dwSize = GetEnvironmentVariableW(
-					bstrEnvName,
-					bstrRet,
-					dwSize
-				);
 			}
 		}
 	}

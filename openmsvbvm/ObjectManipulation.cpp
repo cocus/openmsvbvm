@@ -826,7 +826,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 		"CLSIDFromProgIDEx"
 	);
 
-	if (hr != S_OK)
+	if (!SUCCEEDED(hr))
 	{
 		vbaRaiseException(VBA_EXCEPTION_COMPONENT_CANT_CREATE_OBJECT_OR_RETURN_REFERENCE_TO_THIS_OBJECT);
 		return hr;
@@ -837,8 +837,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 		rCLSID,
 		nullptr,
 		CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER,
-		IID_IUnknown,
-		(LPVOID*)&ppv
+		IID_PPV_ARGS(&ppv)
 	);
 	DEBUG_WIDE(
 		"CoCreateInstance = %.8x, ppv = %.8x",
@@ -846,7 +845,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 		(unsigned int)ppv
 	);
 
-	if (hr != S_OK)
+	if (!SUCCEEDED(hr))
 	{
 		vbaRaiseException(VBA_EXCEPTION_COMPONENT_CANT_CREATE_OBJECT_OR_RETURN_REFERENCE_TO_THIS_OBJECT);
 		return hr;
@@ -854,8 +853,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 
 	IDispatch		*disp;
 	hr = ppv->QueryInterface(
-		IID_IDispatch,
-		(LPVOID*)&disp
+		IID_PPV_ARGS(&disp)
 	);
 	DEBUG_WIDE(
 		"ppv->QueryInterface = %.8x, disp = %.8x",
@@ -863,7 +861,7 @@ EXPORT HRESULT __stdcall rtcCreateObject2(
 		(unsigned int)disp
 	);
 
-	if (hr != S_OK)
+	if (!SUCCEEDED(hr))
 	{
 		vbaRaiseException(VBA_EXCEPTION_COMPONENT_CANT_CREATE_OBJECT_OR_RETURN_REFERENCE_TO_THIS_OBJECT);
 		return hr;
@@ -1001,8 +999,8 @@ EXPORT void __cdecl __vbaLateMemCall(
 	dispParamsInput.cNamedArgs = 0;
 	dispParamsInput.rgdispidNamedArgs = nullptr;
 
-	EXCEPINFO		excepInfo;
-	UINT			uArgErr;
+	EXCEPINFO		excepInfo{};
+	UINT			uArgErr = 0;
 
 	/* Invoke the method */
 	hr = pidObject->Invoke(
@@ -1021,7 +1019,7 @@ EXPORT void __cdecl __vbaLateMemCall(
 		(unsigned int)hr
 	);
 
-	if (hr != S_OK)
+	if (!SUCCEEDED(hr))
 	{
 		DEBUG_WIDE(
 			"pidObject->Invoke failed! GetLastError() = %.8x, excepInfo = '%ls', uArgErr = %.8x",
@@ -1030,7 +1028,7 @@ EXPORT void __cdecl __vbaLateMemCall(
 			uArgErr
 		);
 
-		vbaRaiseException(VBA_EXCEPTION_AUTOMATION_ERROR); // TODO: Check if this exception is right
+		vbaRaiseException(VBA_EXCEPTION_AUTOMATION_ERROR, &excepInfo); // TODO: Check if this exception is right
 	}
 } /* __vbaLateMemCall */
 

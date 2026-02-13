@@ -10,6 +10,9 @@
 std::mutex g_tLastErrorCode_mutex;
 vbaExceptions g_iLastErrorCode = VBA_EXCEPTION_NO_ERROR;
 
+std::mutex g_tLastExcepInfo_mutex;
+EXCEPINFO g_tLastExcepInfo = { 0 };
+
 static std::map<vbaExceptions, const wchar_t*> ExceptionDescriptionMapping = {
 	{ VBA_EXCEPTION_NO_ERROR, L"No error" },
 	{ VBA_EXCEPTION_RETURN_WITHOUT_GOSUB, L"Return without GoSub" },
@@ -270,7 +273,8 @@ static ULONG_PTR const VBExceptionArguments[VB_EXCEPTION_NUMBER_OF_ARGUMENTS] = 
  * @remark			This will call the SEH, which might terminate the app.
  */
 CEXTERN void  vbaRaiseException(
-	vbaExceptions		exceptionCode
+	vbaExceptions		exceptionCode,
+	EXCEPINFO const		*pExcepInfo
 )
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
@@ -285,6 +289,23 @@ CEXTERN void  vbaRaiseException(
 	//	std::unique_lock<std::mutex> lck(g_tLastErrorCode_mutex);
 		g_iLastErrorCode = exceptionCode;
 	}
+	{
+		/* This is a little bit weird, I'm leaving the lock scope because RaiseException doesn't return. */
+	//	std::unique_lock<std::mutex> lck(g_tLastErrorCode_mutex);
+		
+		if (pExcepInfo)
+		{
+			g_tLastExcepInfo = *pExcepInfo;
+		}
+		else
+		{
+			EXCEPINFO tExcepInfo = { 0 };
+			tExcepInfo.scode = exceptionCode;
+			tExcepInfo.bstrDescription = SysAllocString(GetVBExceptionDescription(exceptionCode));
+			g_tLastExcepInfo = tExcepInfo;
+		}
+	}
+
 
 	// For some reason, VB raises exceptions with a hardcoded Exception Code, and exactly two
 	// arguments, both of them 0xDEADCAFE.
@@ -445,22 +466,21 @@ extern void GetVBProjectTitle(BSTR* rhs);
  * @remark			Application will exit after the user acknowledges the message box.
  */
 static void ShowUnhandledVBException(
-	vbaExceptions				ExceptionNumber,
 	struct _EXCEPTION_RECORD	*ExceptionRecord,
 	void						*EstablisherFrame, 
 	struct _CONTEXT				*ContextRecord)
 {
 	wchar_t buff[300] = { 0 };
 
-	const wchar_t* msg = GetVBExceptionDescription(ExceptionNumber);
+	vbaExceptions exc = (vbaExceptions)g_tLastExcepInfo.scode;
 
 	// Print the text as VB, but adds additional exception information.
 	swprintf(
 		buff,
 		299,
 		L"Run-time error '%d':\n\n%s\n\nEIP: %.8x\nEBP: %.8x\nESP: %.8x\nFrame: %.8p",
-		(int)ExceptionNumber,
-		msg ? msg : L"Unknown!",
+		(int)exc,
+		g_tLastExcepInfo.bstrDescription ? g_tLastExcepInfo.bstrDescription : L"Unknown!",
 		ContextRecord ? ContextRecord->Eip : 0,
 		ContextRecord ? ContextRecord->Ebp : 0,
 		ContextRecord ? ContextRecord->Esp : 0,
@@ -672,7 +692,7 @@ EXPORT EXCEPTION_DISPOSITION __cdecl __vbaExceptHandler(
 
 	// Nothing handled the exception, so catch it with the VB user error.
 	DEBUG_WIDE("Unhandled VB exception!");
-	ShowUnhandledVBException(g_iLastErrorCode, ExceptionRecord, EstablisherFrame, ContextRecord);
+	ShowUnhandledVBException(ExceptionRecord, EstablisherFrame, ContextRecord);
 	::ExitProcess(-1); // TODO: check the appropriate return code.
 
 	return ExceptionContinueSearch;

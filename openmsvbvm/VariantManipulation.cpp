@@ -237,7 +237,7 @@ EXPORT BSTR __stdcall rtcHexBstrFromVar(
 	VARIANTARG		*pvargIn
 )
 {
-	VARIANTARG v;
+	VARIANTARG v{};
 	rtcHexVarFromVar(&v, pvargIn);
 	return v.bstrVal;
 } /* rtcHexBstrFromVar */
@@ -385,6 +385,41 @@ EXPORT VARIANTARG * __fastcall __vbaVarMove (
 
 	return pvargDest;
 } /* __vbaVarMove */
+
+
+EXPORT void __stdcall __vbaVarSetVar(
+	VARIANTARG		*pvargDest,
+	VARIANTARG		*pvargSrc
+)
+{
+	if (!pvargDest || !pvargSrc)
+	{
+		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
+		return;
+	}
+
+	IDispatch		*pidSrc = pvargSrc->pdispVal;
+	VARTYPE			vtSrc = pvargSrc->vt;
+
+	if (pvargSrc->vt & VT_BYREF)
+	{
+		pidSrc = *pvargSrc->ppdispVal;
+		vtSrc &= ~VT_BYREF;
+	}
+
+	if ((vtSrc != VT_DISPATCH) && (vtSrc != VT_UNKNOWN))
+	{
+		vbaRaiseException(VBA_EXCEPTION_TYPE_MISMATCH);
+	}
+
+	VARIANTARG dummy = *pvargDest;
+	pvargDest->pdispVal = pidSrc;
+	pvargDest->vt = vtSrc;
+	__vbaFreeVar(&dummy);
+
+	pvargSrc->vt = 0;
+	pvargSrc->iVal = 0;
+}
 
 /**
  * @brief			Frees a variant variable (including an array)

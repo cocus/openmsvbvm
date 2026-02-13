@@ -99,6 +99,7 @@ EXPORTS
 	__vbaVarMove				@145
 	__vbaFreeVar				@131
 	__vbaFreeVarList			@245
+	__vbaVarSetVar				@486
 
 ; vba_objManipulation.cpp
 	__vbaFreeObj				@129

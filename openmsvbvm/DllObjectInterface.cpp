@@ -84,7 +84,10 @@ EXPORT HRESULT __stdcall __vbaNew2(
 				{
 					hr = ppunk->QueryInterface(*pvbNewData->lpguidInterface, (void**)ppv);
 				}
-				hr = E_OUTOFMEMORY;
+				else
+				{
+					hr = E_OUTOFMEMORY;
+				}
 			}
 		}
 

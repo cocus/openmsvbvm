@@ -139,5 +139,10 @@ CEXTERN vbaExceptions __stdcall vbaErrorFromHRESULT(
 );
 
 CEXTERN void vbaRaiseException(
-	vbaExceptions exceptionCode
+	vbaExceptions exceptionCode,
+	EXCEPINFO const* pExcepInfo = nullptr
+);
+
+CEXTERN void vbaRaiseExceptionFromExcepInfo(
+	EXCEPINFO const* pExcepInfo
 );

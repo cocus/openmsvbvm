@@ -17,13 +17,16 @@ Private Type tTest
 End Type
 
 Sub Main()
+    'Call ObjectCreateTest
+    Call ExcelTest
+    
     'Call InitCommonControls
     
     'Call OnErrorGotoTest
     
-    Call OnErrorResumeNextTest
+    'Call OnErrorResumeNextTest
     
-    'Call FPExceptionTest
+    Call FPExceptionTest
     
     'Call DllStringCallTest
     
@@ -34,9 +37,7 @@ Sub Main()
     'Dim s As String
     's = Replace$("This is a test", "test", "sample")
     'MsgBox s
-    
-    'Call ObjectCreateTest
-    
+   
     'Call DateTest
 
     'Call InputBoxTest
@@ -73,6 +74,7 @@ Private Sub llmul()
     c = a * b
     'MsgBox c
 End Sub
+
 Private Sub ArraysTest()
     Dim strArray() As String
     ReDim strArray(36)
@@ -99,6 +101,26 @@ Private Sub ArraysTest()
                 vbTab & ".sFixedString = '" & .sFixedString & "'" & vbCrLf & _
                 vbTab & ".lLong = " & Hex(.lLong)
     End With
+End Sub
+
+Private Sub ExcelTest()
+    Dim cat
+    Set cat = CreateObject("ADOX.Catalog")
+    With cat
+    
+      ' Create a new Jet .mdb
+      .Create _
+          "Provider=Microsoft.Jet.OLEDB.4.0;" & _
+          "Data Source=" & _
+          Environ$("temp") & "\DropMe.mdb"
+      ' Use .mdb's Jet connection to create an Excel table
+      ' (will create a new workbook to contain it)
+      .ActiveConnection.Execute _
+         "CREATE TABLE" & _
+         " [Excel 8.0;HDR=NO;Database=" & Environ$("temp") & "\db.xls;].[Sheet1]" & _
+         " (col FLOAT);"
+    End With
+
 End Sub
 
 Private Sub VBAInteractionTest()
