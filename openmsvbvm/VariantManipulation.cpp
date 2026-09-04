@@ -421,6 +421,17 @@ EXPORT void __stdcall __vbaVarSetVar(
 	pvargSrc->iVal = 0;
 }
 
+EXPORT void __fastcall __vbaVarZero(
+	VARIANTARG* pvargVariant,
+	VARIANTARG* pvargSrc
+)
+{
+	if (pvargVariant->vt > VT_DATE)
+	{
+		__vbaFreeVar(pvargVariant);
+	}
+}
+
 /**
  * @brief			Frees a variant variable (including an array)
  * @param			pvargVariant	Pointer to a VARIANTARG that will be freed.

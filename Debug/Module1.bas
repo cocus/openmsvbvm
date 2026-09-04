@@ -18,7 +18,8 @@ End Type
 
 Sub Main()
     'Call ObjectCreateTest
-    Call ExcelTest
+    'Call ExcelTest
+    'Call ExcelTest2
     
     'Call InitCommonControls
     
@@ -26,7 +27,7 @@ Sub Main()
     
     'Call OnErrorResumeNextTest
     
-    Call FPExceptionTest
+    'Call FPExceptionTest
     
     'Call DllStringCallTest
     
@@ -59,6 +60,8 @@ Sub Main()
     'Call llmul
     
     'Call ClassEventTest
+    
+    Call FormTest
     
     Debug.Print "ASD"
     
@@ -121,6 +124,41 @@ Private Sub ExcelTest()
          " (col FLOAT);"
     End With
 
+End Sub
+
+Private Sub ExcelTest2()
+    Dim xlApp
+    Set xlApp = CreateObject("excel.application")
+    Open Environ$("temp") & "\test_add_chart.xls" For Output As #69
+    Print #69, "1.0" & vbTab & "4.2"
+    Print #69, "1.5" & vbTab & "3.6"
+    Print #69, "2.0" & vbTab & "7.5"
+    Print #69, "2.5" & vbTab & "5.3"
+    Close #69
+    
+    With xlApp
+        .Workbooks.Open Environ$("temp") & "\test_add_chart.xls"
+        .Visible = True
+        .Sheets(1).Select
+        .Sheets(1).Range("A1:B4").Select
+        .Charts.Add
+'        With .ActiveChart
+'            .HasTitle = True
+'            .ChartTitle.Characters.Text = "Title"
+'            .Axes(1, 1).HasTitle = True
+'            .Axes(1, 1).AxisTitle.Characters.Text = "X-axes"
+'            .Axes(2, 1).HasTitle = True
+'            .Axes(2, 1).AxisTitle.Characters.Text = "Y-axes"
+'            .HasLegend = False
+'            .ChartType = 73
+'            '.SetSourceData Source:=.Sheets("test_add_chart").Range("A1:B2"), _
+'            'PlotBy:=2
+'            .Location Where:=2, Name:="test_add_chart"
+'        End With
+'        .ActiveWorkbook.SaveAs Environ$("temp") & "\test_ad_chart.xls", -4143
+    End With
+'        Open Environ$("temp") & "\test_add_chart.xls" For Append As #1
+    End
 End Sub
 
 Private Sub VBAInteractionTest()
@@ -297,4 +335,12 @@ Private Sub ClassEventTest()
     Set objClass2 = New clsTestClass2
     objClass2.Raise "This is ClassEventTest()"
     Set objClass2 = Nothing
+End Sub
+
+Private Sub FormTest()
+    Dim f As Form1
+    Set f = New Form1
+    Load f
+    f.Show vbModal
+    MsgBox "Form closed"
 End Sub

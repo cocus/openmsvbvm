@@ -364,6 +364,13 @@ EXPORT int __stdcall __vbaExitProc(void)
 	return 0;
 } /* __vbaExitProc */
 
+EXPORT void __stdcall __vbaEnd(void)
+{
+	// TODO: this raises an exception that kills the app, silently. For now, just exit the process.
+	exit(0);
+} /* __vbaEnd */
+
+
 EXPORT int __stdcall __vbaOnError(int iUnk1)
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();

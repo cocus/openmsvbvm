@@ -1,0 +1,506 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// This is the CoClass definition for the Form object
+[
+	uuid(33AD4F38-6699-11CF-B70C-00AA0060D393),
+	helpstring("Represents a Form window"),
+]
+coclass Form {
+	[default] interface _Form;
+	//[default, source] interface FormEvents; // TODO!
+};
+
+/*
+ * This is the Interface definition for the _Form object.
+ *
+ * Unlike App.idl/VBGlobal.idl (hand-transcribed straight off real msvbvm60's own
+ * _App/VBGlobal), this file's member list/order was reconstructed from a live dump of
+ * the real _Form interface in C:\...\VB98\VB6.OLB (walked via ITypeLib/ITypeInfo --
+ * IDAPython/WebFetch can't read a binary typelib) rather than from disassembly of
+ * this project's own code. Every named member's vtable slot below was derived from
+ * that dump's own oVft field (real byte offset = oVft/2, slot = that/4 -- confirmed
+ * because Show's oVft=1376 -> 1376/2=688=0x2B0, exactly matching the offset this
+ * project had already confirmed by disassembling a real compiled Form1.Show call
+ * site). The whole point of expressing this as an actual MIDL-compiled interface
+ * (rather than a hand-maintained "raw offset constant" like the old
+ * kFormShowVtableOffset) is that the *compiler* now derives every member's vtable
+ * offset from this declaration order, the same way it would for the real object --
+ * get this file's member order right once, and every offset falls out correctly,
+ * including ones this project doesn't otherwise care about yet.
+ *
+ * Slots with no confirmed real name/purpose (11 before Name, plus one-slot gaps
+ * throughout -- almost all of these are a property's "other half", e.g. a
+ * propput/propputref this dump didn't resolve a name for, or Automation's own
+ * reserved slots) are padded with helpstring("Unknown exported method") placeholder
+ * methods, exactly the same technique App.idl already uses for _App's own unresolved
+ * slots (MissingNN) -- each one just needs to be *a* vtable entry, not a correct one.
+ *
+ * OLE-object-typed members (Picture, Icon, MouseIcon, Font, Palette) are kept as a
+ * bare `long` rather than modeled as real IPictureDisp/IFontDisp objects, per explicit
+ * instruction -- real support would need genuine stdole.Picture/StdFont marshaling,
+ * out of scope here. Pure runtime/live-state members that were never a
+ * design-time value (hWnd, hDC, CurrentX/Y, ActiveControl, Count, Controls) still get
+ * a slot (their real vtable position must exist for everything after them to land
+ * correctly) but are typed as plain `long` placeholders since nothing implements them.
+ */
+[
+	uuid(33AD4F39-6699-11CF-B70C-00AA0060D393),
+	helpstring("Represents a Form window"),
+	hidden,
+	nonextensible
+]
+interface _Form : IDispatch
+{
+	// -- 11 unresolved slots between IDispatch and Name --
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing1(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing2(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing3(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing4(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing5(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing6(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing7(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing8(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing9(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing10(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing11(void);
+
+	[propget, helpstring("Returns the name used in code to identify the form.")]
+		HRESULT _stdcall Name([out, retval] BSTR* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing12(void);
+
+	[propget, helpstring("Returns/sets the text displayed in an object's title bar.")]
+		HRESULT _stdcall Caption([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the text displayed in an object's title bar.")]
+		HRESULT _stdcall Caption([in] BSTR rhs);
+
+	[propget, helpstring("Returns a handle to a form.")]
+		HRESULT _stdcall hWnd([out, retval] long* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing13(void);
+
+	[propget, helpstring("Returns/sets the background color used to display text and graphics in an object.")]
+		HRESULT _stdcall BackColor([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the background color used to display text and graphics in an object.")]
+		HRESULT _stdcall BackColor([in] long rhs);
+	[propget, helpstring("Returns/sets the foreground color used to display text and graphics in an object.")]
+		HRESULT _stdcall ForeColor([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the foreground color used to display text and graphics in an object.")]
+		HRESULT _stdcall ForeColor([in] long rhs);
+
+	[propget, helpstring("Returns/sets the distance between the internal left edge of an object and the left edge of its container.")]
+		HRESULT _stdcall Left([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the distance between the internal left edge of an object and the left edge of its container.")]
+		HRESULT _stdcall Left([in] long rhs);
+	[propget, helpstring("Returns/sets the distance between the internal top edge of an object and the top edge of its container.")]
+		HRESULT _stdcall Top([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the distance between the internal top edge of an object and the top edge of its container.")]
+		HRESULT _stdcall Top([in] long rhs);
+	[propget, helpstring("Returns/sets the width of an object.")]
+		HRESULT _stdcall Width([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the width of an object.")]
+		HRESULT _stdcall Width([in] long rhs);
+	[propget, helpstring("Returns/sets the height of an object.")]
+		HRESULT _stdcall Height([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the height of an object.")]
+		HRESULT _stdcall Height([in] long rhs);
+
+	[propget, helpstring("Returns/sets a value that determines whether an object can respond to user-generated events.")]
+		HRESULT _stdcall Enabled([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines whether an object can respond to user-generated events.")]
+		HRESULT _stdcall Enabled([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets the visual appearance of a form when the form is run, via a value or constant representing normal, minimized, or maximized.")]
+		HRESULT _stdcall WindowState([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the visual appearance of a form when the form is run, via a value or constant representing normal, minimized, or maximized.")]
+		HRESULT _stdcall WindowState([in] long rhs);
+
+	[propget, helpstring("Returns/sets the type of mouse pointer displayed when over part of an object.")]
+		HRESULT _stdcall MousePointer([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the type of mouse pointer displayed when over part of an object.")]
+		HRESULT _stdcall MousePointer([in] long rhs);
+
+	[propget, helpstring("Returns/sets the name of the font used to display text in an object.")]
+		HRESULT _stdcall FontName([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the name of the font used to display text in an object.")]
+		HRESULT _stdcall FontName([in] BSTR rhs);
+	[propget, helpstring("Returns/sets the size of the font used to display text in an object.")]
+		HRESULT _stdcall FontSize([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the size of the font used to display text in an object.")]
+		HRESULT _stdcall FontSize([in] float rhs);
+	[propget, helpstring("Returns/sets a value that determines if the text in an object is bold.")]
+		HRESULT _stdcall FontBold([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines if the text in an object is bold.")]
+		HRESULT _stdcall FontBold([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets a value that determines if the text in an object is italic.")]
+		HRESULT _stdcall FontItalic([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines if the text in an object is italic.")]
+		HRESULT _stdcall FontItalic([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets a value that determines if the text in an object has a line drawn through it.")]
+		HRESULT _stdcall FontStrikethru([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines if the text in an object has a line drawn through it.")]
+		HRESULT _stdcall FontStrikethru([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets a value that determines if the text in an object is underlined.")]
+		HRESULT _stdcall FontUnderline([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines if the text in an object is underlined.")]
+		HRESULT _stdcall FontUnderline([in] VARIANT_BOOL rhs);
+
+	[propget, helpstring("Returns a handle to the device context for an object.")]
+		HRESULT _stdcall hDC([out, retval] long* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing14(void);
+
+	[propget, helpstring("Returns/sets the horizontal coordinate for the next printing or drawing method.")]
+		HRESULT _stdcall CurrentX([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the horizontal coordinate for the next printing or drawing method.")]
+		HRESULT _stdcall CurrentX([in] float rhs);
+	[propget, helpstring("Returns/sets the vertical coordinate for the next printing or drawing method.")]
+		HRESULT _stdcall CurrentY([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the vertical coordinate for the next printing or drawing method.")]
+		HRESULT _stdcall CurrentY([in] float rhs);
+
+	[propget, helpstring("Returns/sets the horizontal coordinate of the left edge of an object in the units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleLeft([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the horizontal coordinate of the left edge of an object in the units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleLeft([in] float rhs);
+	[propget, helpstring("Returns/sets the vertical coordinate of the top edge of an object in the units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleTop([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the vertical coordinate of the top edge of an object in the units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleTop([in] float rhs);
+	[propget, helpstring("Returns/sets the width of an object in units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleWidth([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the width of an object in units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleWidth([in] float rhs);
+	[propget, helpstring("Returns/sets the height of an object in units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleHeight([out, retval] float* rhs);
+	[propput, helpstring("Returns/sets the height of an object in units specified by its ScaleMode property.")]
+		HRESULT _stdcall ScaleHeight([in] float rhs);
+	[propget, helpstring("Returns/sets the unit of measurement used for object coordinates when printing or drawing on an object.")]
+		HRESULT _stdcall ScaleMode([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the unit of measurement used for object coordinates when printing or drawing on an object.")]
+		HRESULT _stdcall ScaleMode([in] short rhs);
+
+	[propget, helpstring("Returns/sets a value indicating whether text and graphics drawn on an object appear against a transparent background.")]
+		HRESULT _stdcall FontTransparent([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value indicating whether text and graphics drawn on an object appear against a transparent background.")]
+		HRESULT _stdcall FontTransparent([in] VARIANT_BOOL rhs);
+
+	[propget, helpstring("Returns/sets the line style for output from graphics methods on an object.")]
+		HRESULT _stdcall DrawStyle([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the line style for output from graphics methods on an object.")]
+		HRESULT _stdcall DrawStyle([in] short rhs);
+	[propget, helpstring("Returns/sets the line width for output from graphics methods on an object.")]
+		HRESULT _stdcall DrawWidth([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the line width for output from graphics methods on an object.")]
+		HRESULT _stdcall DrawWidth([in] short rhs);
+	[propget, helpstring("Returns/sets the fill style of a shape.")]
+		HRESULT _stdcall FillStyle([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the fill style of a shape.")]
+		HRESULT _stdcall FillStyle([in] short rhs);
+	[propget, helpstring("Returns/sets the fill color used to fill a shape.")]
+		HRESULT _stdcall FillColor([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the fill color used to fill a shape.")]
+		HRESULT _stdcall FillColor([in] long rhs);
+	[propget, helpstring("Returns/sets the appearance of output from graphics methods on an object.")]
+		HRESULT _stdcall DrawMode([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the appearance of output from graphics methods on an object.")]
+		HRESULT _stdcall DrawMode([in] short rhs);
+	[propget, helpstring("Returns/sets a value indicating whether output created with graphics methods is automatically repainted.")]
+		HRESULT _stdcall AutoRedraw([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value indicating whether output created with graphics methods is automatically repainted.")]
+		HRESULT _stdcall AutoRedraw([in] VARIANT_BOOL rhs);
+
+	// -- OLE-object-typed member; kept as a plain LONG placeholder, see file header --
+	[propget, helpstring("Returns/sets a graphic to be displayed in an object.")]
+		HRESULT _stdcall Picture([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets a graphic to be displayed in an object.")]
+		HRESULT _stdcall Picture([in] long rhs);
+
+	[propget, helpstring("Returns/sets the border style for an object.")]
+		HRESULT _stdcall BorderStyle([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the border style for an object.")]
+		HRESULT _stdcall BorderStyle([in] short rhs);
+
+	// -- OLE-object-typed member; kept as a plain LONG placeholder, see file header --
+	[propget, helpstring("Returns/sets the icon displayed when a form is minimized.")]
+		HRESULT _stdcall Icon([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the icon displayed when a form is minimized.")]
+		HRESULT _stdcall Icon([in] long rhs);
+
+	[propget, helpstring("Returns/sets the DDE conversation's application and topic names for a destination form or control.")]
+		HRESULT _stdcall LinkTopic([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the DDE conversation's application and topic names for a destination form or control.")]
+		HRESULT _stdcall LinkTopic([in] BSTR rhs);
+	[propget, helpstring("Returns/sets the type of Dynamic Data Exchange (DDE) conversation between a source and a destination.")]
+		HRESULT _stdcall LinkMode([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the type of Dynamic Data Exchange (DDE) conversation between a source and a destination.")]
+		HRESULT _stdcall LinkMode([in] short rhs);
+
+	[propget, helpstring("Returns/sets a value that determines whether the Maximize button is enabled or disabled.")]
+		HRESULT _stdcall MaxButton([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing15(void);
+	[propget, helpstring("Returns/sets a value that determines whether the Minimize button is enabled or disabled.")]
+		HRESULT _stdcall MinButton([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing16(void);
+	[propget, helpstring("Returns/sets a value that determines whether a Control-menu box, Minimize button, and Maximize button appear in the title bar of a form.")]
+		HRESULT _stdcall ControlBox([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing17(void);
+
+	[propget, helpstring("Returns the picture drawn by graphics methods, or set at design time, that is displayed in an object.")]
+		HRESULT _stdcall Image([out, retval] long* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing18(void);
+
+	[propget, helpstring("Returns a value indicating whether the display device context for an object has been allocated.")]
+		HRESULT _stdcall HasDC([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing19(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing20(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing21(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing22(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing23(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing24(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing25(void);
+
+	[propget, helpstring("Returns/sets a value that determines whether an object is visible or hidden.")]
+		HRESULT _stdcall Visible([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value that determines whether an object is visible or hidden.")]
+		HRESULT _stdcall Visible([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Stores any extra data needed for your program.")]
+		HRESULT _stdcall Tag([out, retval] BSTR* rhs);
+	[propput, helpstring("Stores any extra data needed for your program.")]
+		HRESULT _stdcall Tag([in] BSTR rhs);
+
+	[propget, helpstring("Returns/sets a value indicating whether a form can be displayed as a child document window in an MDI form's workspace.")]
+		HRESULT _stdcall MDIChild([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing26(void);
+
+	[propget, helpstring("Returns/sets a value indicating whether keyboard events for a form's controls are processed by the form's Form_KeyPress event procedure first.")]
+		HRESULT _stdcall KeyPreview([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value indicating whether keyboard events for a form's controls are processed by the form's Form_KeyPress event procedure first.")]
+		HRESULT _stdcall KeyPreview([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets a value indicating whether graphics methods and output from controls create persistent graphics or cause invalidation.")]
+		HRESULT _stdcall ClipControls([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets a value indicating whether graphics methods and output from controls create persistent graphics or cause invalidation.")]
+		HRESULT _stdcall ClipControls([in] VARIANT_BOOL rhs);
+	[propget, helpstring("Returns/sets the context number for an object's associated Help file, for use in developing custom Help.")]
+		HRESULT _stdcall HelpContextID([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets the context number for an object's associated Help file, for use in developing custom Help.")]
+		HRESULT _stdcall HelpContextID([in] long rhs);
+
+	[propget, helpstring("Returns/sets the control on a form with the focus.")]
+		HRESULT _stdcall ActiveControl([out, retval] long* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing27(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing28(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing29(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing30(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing31(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing32(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing33(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing34(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing35(void);
+
+	[propget, helpstring("Returns the number of objects in a collection.")]
+		HRESULT _stdcall Count([out, retval] short* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing36(void);
+
+	[propget, helpstring("Returns a collection consisting of every control contained in the specified form.")]
+		HRESULT _stdcall Controls([out, retval] long* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing37(void);
+
+	// -- OLE-object-typed member; kept as a plain LONG placeholder, see file header --
+	[propget, helpstring("Returns/sets a custom mouse icon.")]
+		HRESULT _stdcall MouseIcon([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets a custom mouse icon.")]
+		HRESULT _stdcall MouseIcon([in] long rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing38(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing39(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing40(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing41(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing42(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing43(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing44(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing45(void);
+
+	// -- OLE-object-typed member; kept as a plain LONG placeholder, see file header --
+	[propget, helpstring("Returns/sets the Font object.")]
+		HRESULT _stdcall Font([out, retval] long* rhs);
+	[propputref, helpstring("Returns/sets the Font object.")]
+		HRESULT _stdcall Font([in] long rhs);
+
+	[propget, helpstring("Returns/sets the appearance of specified objects at run time via a value or constant representing flat or 3-D.")]
+		HRESULT _stdcall Appearance([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets the appearance of specified objects at run time via a value or constant representing flat or 3-D.")]
+		HRESULT _stdcall Appearance([in] short rhs);
+
+	[propget, helpstring("Returns/sets a value indicating whether a What's This Help button is displayed in a form's title bar.")]
+		HRESULT _stdcall WhatsThisButton([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing46(void);
+	[propget, helpstring("Determines whether context-sensitive Help uses What's This Help or conventional Help.")]
+		HRESULT _stdcall WhatsThisHelp([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing47(void);
+	[propget, helpstring("Returns/sets a value indicating whether a form is displayed in the Microsoft Windows taskbar.")]
+		HRESULT _stdcall ShowInTaskbar([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing48(void);
+
+	[propget, helpstring("Returns/sets the text display orientation and visual appearance of certain features on a bidirectional platform.")]
+		HRESULT _stdcall RightToLeft([out, retval] VARIANT_BOOL* rhs);
+	[propput, helpstring("Returns/sets the text display orientation and visual appearance of certain features on a bidirectional platform.")]
+		HRESULT _stdcall RightToLeft([in] VARIANT_BOOL rhs);
+
+	[propget, helpstring("Returns/sets a value that specifies how the position of a form is determined when it is first displayed.")]
+		HRESULT _stdcall StartUpPosition([out, retval] short* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing49(void);
+
+	[propget, helpstring("Returns/sets whether a target can accept data via OLE drag/drop and how a target responds to drop operations.")]
+		HRESULT _stdcall OLEDropMode([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets whether a target can accept data via OLE drag/drop and how a target responds to drop operations.")]
+		HRESULT _stdcall OLEDropMode([in] short rhs);
+
+	// -- OLE-object-typed member; kept as a plain LONG placeholder, see file header --
+	[propget, helpstring("Returns/sets a custom color palette.")]
+		HRESULT _stdcall Palette([out, retval] long* rhs);
+	[propputref, helpstring("Returns/sets a custom color palette.")]
+		HRESULT _stdcall Palette([in] long rhs);
+	[propget, helpstring("Returns/sets a value indicating the palette to be used when an object is painted.")]
+		HRESULT _stdcall PaletteMode([out, retval] short* rhs);
+	[propput, helpstring("Returns/sets a value indicating the palette to be used when an object is painted.")]
+		HRESULT _stdcall PaletteMode([in] short rhs);
+
+	[propget, helpstring("Returns/sets a value indicating whether an end user can move a window.")]
+		HRESULT _stdcall Moveable([out, retval] VARIANT_BOOL* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing50(void);
+
+	[helpstring("Repaints a form or updates an object's Controls collection.")]
+		HRESULT _stdcall Refresh(void);
+
+	[helpstring("Moves an object.")]
+		HRESULT _stdcall Move(
+			[in] float Left,
+			[in, optional] VARIANT Top,
+			[in, optional] VARIANT Width,
+			[in, optional] VARIANT Height
+		);
+
+	[helpstring("Moves the focus to the specified object.")]
+		HRESULT _stdcall SetFocus(void);
+
+	[helpstring("Repositions a form/control relative to others of the same type.")]
+		HRESULT _stdcall ZOrder([in, optional] VARIANT Position);
+
+	// -- Confirmed slot 172 = byte offset 0x2B0 -- matches this project's own
+	//    already-verified real-msvbvm60 offset for Form.Show exactly, validating the
+	//    whole derivation above.
+	[helpstring("Displays a form. Loads the form if not already loaded.")]
+		HRESULT _stdcall Show(
+			[in] VARIANT modal,
+			[in] VARIANT OwnerForm
+		);
+
+	[helpstring("Removes an object from the screen.")]
+		HRESULT _stdcall Hide(void);
+
+	[helpstring("Prints the contents of a form.")]
+		HRESULT _stdcall PrintForm(void);
+
+	[helpstring("Displays a pop-up menu.")]
+		HRESULT _stdcall PopupMenu(
+			[in] IDispatch* Menu,
+			[in, optional] VARIANT Flags,
+			[in, optional] VARIANT x,
+			[in, optional] VARIANT y,
+			[in, optional] VARIANT BoldCommand
+		);
+
+	[helpstring("Draws a circle, ellipse, or arc.")]
+		HRESULT _stdcall Circle(
+			[in] float x,
+			[in] float y,
+			[in] float Radius,
+			[in, optional] VARIANT Color,
+			[in, optional] VARIANT StartAngle,
+			[in, optional] VARIANT EndAngle,
+			[in, optional] VARIANT Aspect
+		);
+
+	[helpstring("Clears graphics and text generated at run time from a form or picture box.")]
+		HRESULT _stdcall Cls(void);
+
+	[helpstring("Draws a line or rectangle.")]
+		HRESULT _stdcall Line(
+			[in] float x1,
+			[in] float y1,
+			[in] float x2,
+			[in] float y2,
+			[in, optional] VARIANT Color,
+			[in, optional] VARIANT BorF
+		);
+
+	[helpstring("Renders the contents of a graphics file onto an object.")]
+		HRESULT _stdcall PaintPicture(
+			[in] IDispatch* Picture,
+			[in] float x1,
+			[in] float y1,
+			[in, optional] VARIANT width1,
+			[in, optional] VARIANT height1,
+			[in, optional] VARIANT x2,
+			[in, optional] VARIANT y2,
+			[in, optional] VARIANT width2,
+			[in, optional] VARIANT height2,
+			[in, optional] VARIANT Opcode
+		);
+
+	[helpstring("Returns, as a Long, the RGB color of the specified point on a form or picture box.")]
+		HRESULT _stdcall Point(
+			[in] float x,
+			[in] float y,
+			[out, retval] long* rhs
+		);
+
+	[helpstring("Sets the color of the specified point on an object.")]
+		HRESULT _stdcall PSet(
+			[in] float x,
+			[in] float y,
+			[in, optional] VARIANT Color
+		);
+
+	[helpstring("Defines the coordinate system for an object.")]
+		HRESULT _stdcall Scale(
+			[in, optional] VARIANT x1,
+			[in, optional] VARIANT y1,
+			[in, optional] VARIANT x2,
+			[in, optional] VARIANT y2
+		);
+
+	[helpstring("Converts and returns a horizontal measurement in the units specified by the ScaleMode property.")]
+		HRESULT _stdcall ScaleX(
+			[in] float Value,
+			[in, optional] VARIANT fromScale,
+			[in, optional] VARIANT toScale,
+			[out, retval] float* rhs
+		);
+
+	[helpstring("Converts and returns a vertical measurement in the units specified by the ScaleMode property.")]
+		HRESULT _stdcall ScaleY(
+			[in] float Value,
+			[in, optional] VARIANT fromScale,
+			[in, optional] VARIANT toScale,
+			[out, retval] float* rhs
+		);
+
+	[helpstring("Returns the width, as it would be printed, of a text string using an object's current font.")]
+		HRESULT _stdcall TextWidth(
+			[in] BSTR str,
+			[out, retval] float* rhs
+		);
+
+	[helpstring("Returns the height, as it would be printed, of a text string using an object's current font.")]
+		HRESULT _stdcall TextHeight(
+			[in] BSTR str,
+			[out, retval] float* rhs
+		);
+
+	[helpstring("Forces the Validate event for the control that most recently lost the focus.")]
+		HRESULT _stdcall ValidateControls([out, retval] VARIANT_BOOL* rhs);
+
+	[helpstring("Manually invokes What's This Help mode.")]
+		HRESULT _stdcall WhatsThisMode(void);
+
+	[helpstring("Starts an OLE drag/drop operation explicitly, dispensing with automatic OLE drag/drop.")]
+		HRESULT _stdcall OLEDrag(void);
+};

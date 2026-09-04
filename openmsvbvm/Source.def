@@ -81,6 +81,7 @@ EXPORTS
 	__vbaSetSystemError			@394
 	__vbaErrorOverflow			@217
 	__vbaChkstk					@182
+	__vbaEnd					@212
 
 ; vba_File.cpp
 	__vbaFileClose				@229
@@ -89,6 +90,7 @@ EXPORTS
 	__vbaGet3					@247
 	rtcFileLength				@570
 	__vbaFileSeek				@236
+	__vbaPrintFile				@355
 
 ; vba_varManipulation.cpp
 	__vbaVarCat					@452
@@ -100,6 +102,7 @@ EXPORTS
 	__vbaFreeVar				@131
 	__vbaFreeVarList			@245
 	__vbaVarSetVar				@486
+	__vbaVarZero				@147
 
 ; vba_objManipulation.cpp
 	__vbaFreeObj				@129
@@ -108,6 +111,7 @@ EXPORTS
 	__vbaFreeObjList			@243
 	rtcCreateObject2			@716
 	__vbaObjVar					@351
+	__vbaVarLateMemSt			@115
 	__vbaVarLateMemCallLdRf		@113
 	__vbaVarLateMemCallLd		@112
 	__vbaVarAdd					@450

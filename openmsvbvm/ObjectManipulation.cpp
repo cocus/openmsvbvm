@@ -1,74 +1,17 @@
 #include "vba_internal.h"
 #include "Exceptions.hpp"
+#include <wctype.h>
 
 #include "vba_Locale.h"
 #include "ObjectManipulation.hpp"
 #include "DllObjectInterface.hpp"
 
 #include "vba_structures.h"
-
-typedef struct
-{
-	void					* lpVBVtable;
-	unsigned int			lNull;
-	class vbClassWrapper	* pWrapper;
-} vba_VBVTable;
-
-class vbClassWrapper : IDispatch
-{
-public:
-	vbClassWrapper(vba_VBVTable * pWrapperVtable, ObjectInfoWithOptional* pObjInfo);
-	~vbClassWrapper();
-
-	// IUnknown interface 
-	HRESULT __stdcall QueryInterface(
-		REFIID riid,
-		void **ppObj
-	);
-
-	ULONG   __stdcall AddRef();
-	ULONG   __stdcall Release();
-
-	// IDispatch interface
-	HRESULT __stdcall GetTypeInfoCount(
-		UINT * pctInfo
-	);
-
-	HRESULT __stdcall GetTypeInfo(
-		UINT itinfo,
-		LCID lcid,
-		ITypeInfo** pptinfo
-	);
-
-	HRESULT __stdcall GetIDsOfNames(
-		REFIID riid,
-		LPOLESTR* rgszNames,
-		UINT cNames,
-		LCID lcid,
-		DISPID* rgdispid
-	);
-	
-	HRESULT __stdcall Invoke(
-		DISPID dispidMember,
-		REFIID riid,
-		LCID lcid,
-		WORD wFlags,
-		DISPPARAMS* pdispparams,
-		VARIANT* pvarResult,
-		EXCEPINFO* pexcepinfo,
-		UINT* puArgErr
-	);
-
-	// VB6 Init and Terminate invokers
-	void InvokeVB6Initialize();
-	void InvokeVB6Terminate();
-
-private:
-	long						m_nRefCount;   // for managing the reference count
-	int							* m_pVtable = nullptr;
-	vba_VBVTable				* m_pVBVTable = nullptr;
-	ObjectInfoWithOptional*		m_pObjInfo = nullptr;
-};
+#include "EventDispatch.hpp"
+#include "FormWindow.hpp"
+#include "FormProperties.hpp"
+#include "ClassWrapper.hpp"
+#include "FormWrapper.hpp"
 
 
 #define DECLARE_BASIC_CLASS_WRAPPER(name, arg_types, arg_names, ret_type)			\
@@ -161,7 +104,13 @@ void vbClassWrapper::InvokeVB6Initialize()
 
 	typedef void(__stdcall * pInit)(vba_VBVTable * ths);
 
-	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + ((this->m_pObjInfo->opt.wEventCount - 2));
+	/* bWInitializeEvent/bWTerminateEvent are byte offsets measured from the wEventCount field
+	   itself (8 bytes before lpEvents), NOT plain indices into lpEvents and NOT always the last
+	   two entries -- a class with WithEvents members appends its Get/Put/Set accessor thunks
+	   after Class_Initialize/Class_Terminate, so "last two slots" only works by coincidence for
+	   classes without WithEvents. Confirmed via msvbvm60 disassembly + a real WithEvents test case. */
+	unsigned int index = ((unsigned int)this->m_pObjInfo->opt.bWInitializeEvent - 8) / sizeof(void*);
+	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + index;
 
 	if (pAddr == nullptr)
 	{
@@ -176,6 +125,16 @@ void vbClassWrapper::InvokeVB6Initialize()
 		(unsigned int)pCall
 	);
 
+	// Not every class implements Class_Initialize -- lpEvents can hold a null slot
+	// (or the index can land outside the populated part of the table for classes
+	// whose event/WithEvents layout differs, e.g. Forms). Calling through that is
+	// an unconditional crash, so skip when there's nothing to call.
+	if (pCall == nullptr)
+	{
+		return;
+	}
+
+	CurrentInstanceScope instanceScope(this->m_pVBVTable);
 	pCall(this->m_pVBVTable);
 }
 
@@ -185,7 +144,8 @@ void vbClassWrapper::InvokeVB6Terminate()
 
 	typedef void(__stdcall * pInit)(vba_VBVTable * ths);
 
-	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + ((this->m_pObjInfo->opt.wEventCount - 1));
+	unsigned int index = ((unsigned int)this->m_pObjInfo->opt.bWTerminateEvent - 8) / sizeof(void*);
+	unsigned int ** pAddr = (unsigned int**)(void*)(this->m_pObjInfo->opt.lpEvents) + index;
 
 	if (pAddr == nullptr)
 	{
@@ -199,6 +159,14 @@ void vbClassWrapper::InvokeVB6Terminate()
 		(unsigned int)pCall
 	);
 
+	// See the matching guard in InvokeVB6Initialize -- not every class implements
+	// Class_Terminate, so a null slot here is expected and must not be called.
+	if (pCall == nullptr)
+	{
+		return;
+	}
+
+	CurrentInstanceScope instanceScope(this->m_pVBVTable);
 	pCall(this->m_pVBVTable);
 }
 
@@ -206,7 +174,7 @@ vbClassWrapper::vbClassWrapper(
 	vba_VBVTable				*pWrapperVtable,
 	ObjectInfoWithOptional*pObjInfo
 )
-	: m_nRefCount(1), m_pVBVTable(pWrapperVtable), m_pObjInfo(pObjInfo)
+	: m_nRefCount(1), m_pVBVTable(pWrapperVtable), m_pObjInfo(pObjInfo), m_connectionPoint(static_cast<IDispatch*>(this))
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
@@ -247,14 +215,41 @@ HRESULT __stdcall vbClassWrapper::QueryInterface(
 	void ** ppObj
 )
 {
-	return E_NOTIMPL;
+	if (!ppObj)
+	{
+		return E_POINTER;
+	}
+
+	if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDispatch))
+	{
+		/* m_pVBVTable is vtable-first (lpVBVtable is its first field), i.e. it's
+		   itself the valid IDispatch-shaped pointer compiled VB6 code and other
+		   parts of this project already treat as "the object". */
+		*ppObj = m_pVBVTable;
+		AddRef();
+		return S_OK;
+	}
+
+	if (IsEqualIID(riid, IID_IConnectionPointContainer))
+	{
+		*ppObj = static_cast<IConnectionPointContainer*>(this);
+		AddRef();
+		return S_OK;
+	}
+
+	*ppObj = nullptr;
+	return E_NOINTERFACE;
 }
 
 HRESULT __stdcall vbClassWrapper::GetTypeInfoCount(
 	UINT * pctInfo
 )
 {
-	return E_NOTIMPL;
+	if (pctInfo)
+	{
+		*pctInfo = 0; /* no real ITypeInfo object provided yet */
+	}
+	return S_OK;
 }
 
 HRESULT __stdcall vbClassWrapper::GetTypeInfo(
@@ -263,7 +258,7 @@ HRESULT __stdcall vbClassWrapper::GetTypeInfo(
 	ITypeInfo ** pptinfo
 )
 {
-	return E_NOTIMPL;
+	return TYPE_E_ELEMENTNOTFOUND;
 }
 
 HRESULT __stdcall vbClassWrapper::GetIDsOfNames(
@@ -274,7 +269,66 @@ HRESULT __stdcall vbClassWrapper::GetIDsOfNames(
 	DISPID * rgdispid
 )
 {
-	return E_NOTIMPL;
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	if (!m_pObjInfo || !m_pObjInfo->hdr.lpObject || !rgszNames || !rgdispid)
+	{
+		return E_NOTIMPL;
+	}
+
+	/* Real name -> DISPID resolution sourced from this compiled class's own
+	   PublicObjectDescriptor.lpMethodNames table (already-populated for native
+	   builds, including for Private WithEvents handler subs. */
+	PublicObjectDescriptor * pDesc = m_pObjInfo->hdr.lpObject;
+	HRESULT hrOverall = S_OK;
+
+	for (UINT i = 0; i < cNames; i++)
+	{
+		rgdispid[i] = DISPID_UNKNOWN;
+
+		for (DWORD m = 0; pDesc->lpMethodNames && m < pDesc->dwMethodCount; m++)
+		{
+			LPCSTR pszName = pDesc->lpMethodNames[m];
+			if (!pszName)
+			{
+				continue;
+			}
+
+			LPCSTR pA = pszName;
+			LPOLESTR pW = rgszNames[i];
+			bool matches = true;
+			while (*pA && *pW)
+			{
+				if (towlower((wchar_t)(unsigned char)*pA) != towlower(*pW))
+				{
+					matches = false;
+					break;
+				}
+				pA++;
+				pW++;
+			}
+			matches = matches && (*pA == 0) && (*pW == 0);
+
+			if (matches)
+			{
+				rgdispid[i] = (DISPID)(m + 1);
+				break;
+			}
+		}
+
+		if (rgdispid[i] == DISPID_UNKNOWN)
+		{
+			hrOverall = DISP_E_UNKNOWNNAME;
+		}
+	}
+
+	DEBUG_WIDE(
+		"cNames %.8x, hr %.8x",
+		cNames,
+		(unsigned int)hrOverall
+	);
+
+	return hrOverall;
 }
 
 HRESULT __stdcall vbClassWrapper::Invoke(
@@ -289,6 +343,36 @@ HRESULT __stdcall vbClassWrapper::Invoke(
 )
 {
 	return E_NOTIMPL;
+}
+
+HRESULT __stdcall vbClassWrapper::EnumConnectionPoints(
+	IEnumConnectionPoints ** ppEnum
+)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT __stdcall vbClassWrapper::FindConnectionPoint(
+	REFIID riid,
+	IConnectionPoint ** ppCP
+)
+{
+	if (!ppCP)
+	{
+		return E_POINTER;
+	}
+
+	/* This class only ever exposes one outgoing (source) interface, so riid isn't
+	   disambiguated -- see the plan's Known Limitations for a class with more than
+	   one distinct outgoing interface. */
+	*ppCP = &m_connectionPoint;
+	m_connectionPoint.AddRef();
+	return S_OK;
+}
+
+void vbClassWrapper::RaiseEvent(DISPID dispId, VARIANTARG * pArgs, DWORD argCount)
+{
+	RaiseEventOnSinks(m_connectionPoint.Sinks(), dispId, pArgs, argCount);
 }
 
 /**
@@ -312,7 +396,51 @@ EXPORT void __stdcall __vbaHresultCheckObj(
 		(unsigned int)arg3,
 		(unsigned int)arg4
 	);
+
+	// arg1 is the HRESULT returned by the object call this guards (e.g. Load/Unload
+	// on the VB global object). This was a no-op stub, which let compiled code march
+	// on as if a failed call (e.g. our still-E_NOTIMPL VBGlobalImpl::Load) had
+	// succeeded, crashing later on unrelated state. Raise the matching VB runtime
+	// error instead, same as every other HRESULT-checking call site in this project.
+	HRESULT hr = (HRESULT)arg1;
+	if (FAILED(hr))
+	{
+		vbaRaiseException(vbaErrorFromHRESULT(hr));
+	}
 } /* __vbaHresultCheckObj */
+
+/**
+ * @brief			Returns true if pDesc describes a Form- or MDIForm-derived class.
+ *
+ * A first attempt at this compared opt.lpuuidObjectTypes[0] against a GUID literal
+ * captured from one specific Form1 build -- that turned out to be WRONG: re-checking
+ * across two separate compiles of the same Form1 showed that GUID is freshly
+ * randomized on every single compile (same as opt.clsidObjectClass), not a stable
+ * "this is a Form" marker at all. That bug silently made this function return false
+ * after any rebuild, skipping the vtable padding entirely and leaving `.Show`'s compiled
+ * call through `[lpVBVtable + 0x2B0]` reading unrelated heap memory.
+ *
+ * PublicObjectDescriptor.fObjectType (see that field's own doc comment in
+ * vba_structures.h for the full confirmed bit table) is the real, stable signal: bit
+ * 0x80 is the discriminator, confirmed shared by both a plain Form and an MDIForm
+ * (dumped from a whole project's ObjectTable.lpObjectArray, live, cross-checked
+ * against VBHeader.wFormCount -- see that struct's own lpGuiTable comment for why
+ * that field looked like a promising shortcut for this but wasn't one).
+ * UserControl/UserDocument/PropertyPage aren't covered -- this project doesn't
+ * support those object kinds at all yet, so whether they'd need to be treated as
+ * "form-like" here too hasn't come up.
+ */
+static bool IsFormLikeDescriptor(
+	ObjectInfoWithOptional	*pDesc
+)
+{
+	if (!pDesc->hdr.lpObject)
+	{
+		return false;
+	}
+
+	return (pDesc->hdr.lpObject->fObjectType & 0x80) != 0;
+}
 
 /**
  * @brief			Constructs a wrapper object for a VB6 class, and instantiates that class.
@@ -371,18 +499,37 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	);
 
 	UINT uiVtableCount = pvbNewData->opt.wEventCount;
+	bool bIsFormLike = IsFormLikeDescriptor(pvbNewData);
 
-	if (tObj->lpPublicBytes->iSize < sizeof(vba_BASIC_CLASS_IUnknownBridge))
+	/* tObj->lpPublicBytes->iSize is the size of the class's OWN public/module-level variable
+	   storage (used below for the per-instance data appended after vba_VBVTable) -- it has
+	   nothing to do with the vtable blob's size, and can legitimately be 0 for a class with no
+	   public variables (e.g. clsTestClass1). The vtable blob's size is the bridge plus the
+	   class's own compiled method/event table, computed independently here. */
+	size_t vtableBlobSize = sizeof(vba_BASIC_CLASS_IUnknownBridge) + (size_t)sizeof(void*) * uiVtableCount;
+
+	/* Form-derived classes compile direct vtable calls (e.g. Show) at large, fixed byte
+	   offsets into this SAME per-instance vtable -- confirmed live: `f.Show vbModal`
+	   compiles to `call dword ptr [f->lpVBVtable + 0x2B0]`. Pad the blob out to fit
+	   the real _Form interface's own tail (everything after IDispatch -- see
+	   GetFormInterfaceVtableTail, FormWrapper.cpp/.hpp) so every one of its slots is
+	   valid, inserted *before* this class's own wEventCount-driven slots (which the
+	   compiler lays out immediately after however large its own vtable actually is).
+	   Only Show is a real implementation in that copied tail; every other intrinsic
+	   slot is an inert stub -- not yet reverse-engineered, and not called by any test
+	   exercised so far (see the plan's Known Limitations). */
+	size_t formVtableTailSlotCount = 0;
+	void * const *pFormVtableTail = nullptr;
+	size_t formIntrinsicPadding = 0;
+	if (bIsFormLike)
 	{
-		DEBUG_WIDE(
-			"Public bytes size %.8x is too small for the bridge struct and the specified vtable count!",
-			tObj->lpPublicBytes->iSize
-		);
-		return nullptr;
+		pFormVtableTail = GetFormInterfaceVtableTail(&formVtableTailSlotCount);
+		formIntrinsicPadding = formVtableTailSlotCount * sizeof(void*);
+		vtableBlobSize += formIntrinsicPadding;
 	}
 
 	/* pWrapperVTable is technically the "VB class" with it's functions after the IDispatch stuff */
-	void * pWrapperVtable = malloc(tObj->lpPublicBytes->iSize);//sizeof(void*) * uiVtableCount);
+	void * pWrapperVtable = malloc(vtableBlobSize);
 	if (pWrapperVtable == nullptr)
 	{
 		return nullptr;
@@ -390,13 +537,13 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	memset(
 		pWrapperVtable,
 		0,
-		tObj->lpPublicBytes->iSize//sizeof(void*) * uiVtableCount
+		vtableBlobSize
 	);
 
 	/* Setup the bridgeStruct (IUnk-like that bridges VB's VTable to COM) */
 	vba_BASIC_CLASS_IUnknownBridge bridgeStruct;
 	BASIC_CLASS_WRAPPER_FUNCTIONS(ASSIGN_MEMBERS_OF_BRIDGE_STRUCT);
-	
+
 	/* And copy it to the pWrapperVTable */
 	memcpy(
 		pWrapperVtable,
@@ -404,9 +551,24 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 		sizeof(vba_BASIC_CLASS_IUnknownBridge)
 	);
 
-	/* Copy the VB Specified vtable to the pWrapperVTable after bridgeStruct */
+	if (bIsFormLike && pFormVtableTail)
+	{
+		/* Landing every real _Form member (including Show, at its true compiler-
+		   assigned slot -- see GetFormInterfaceVtableTail's own comment for why that
+		   lines up with the real, disassembly-confirmed 0x2B0 byte offset with no
+		   manual arithmetic here) right after this object's own 7-slot IUnknown/
+		   IDispatch bridge. */
+		memcpy(
+			(void*)((unsigned char*)pWrapperVtable + sizeof(vba_BASIC_CLASS_IUnknownBridge)),
+			pFormVtableTail,
+			formIntrinsicPadding
+		);
+	}
+
+	/* Copy the VB Specified vtable to the pWrapperVTable after bridgeStruct (and any
+	   Form intrinsic padding) */
 	memcpy(
-		(void*)((unsigned int)pWrapperVtable + sizeof(vba_BASIC_CLASS_IUnknownBridge)),
+		(void*)((unsigned int)pWrapperVtable + sizeof(vba_BASIC_CLASS_IUnknownBridge) + formIntrinsicPadding),
 		pvbNewData->opt.lpEvents,
 		sizeof(void*) * uiVtableCount
 	);
@@ -427,15 +589,19 @@ EXPORT vba_VBVTable * __stdcall __vbaNew(
 	ret->lpVBVtable = pWrapperVtable;
 
 
-	/* Create a vbClassWrapper object, and assign the vba_VBVTable pointer to it */
-	ret->pWrapper = new vbClassWrapper(ret, pvbNewData);
+	/* Create a vbClassWrapper (or, for a Form-derived class, the derived vbFormWrapper
+	   -- see ClassWrapper.hpp/FormWrapper.hpp for why they're split), and assign the
+	   vba_VBVTable pointer to it */
+	ret->pWrapper = bIsFormLike
+		? static_cast<vbClassWrapper*>(new vbFormWrapper(ret, pvbNewData))
+		: new vbClassWrapper(ret, pvbNewData);
 
 	DEBUG_WIDE(
 		"ret %.8x, ret->lpVBVtable %.8x spans to %.8x, ret->pWrapper %.8x",
 		(unsigned int)ret,
 		(unsigned int)ret->lpVBVtable,
-		(unsigned int)ret->lpVBVtable + tObj->lpPublicBytes->iSize,
-		(unsigned int)ret->pWrapper		
+		(unsigned int)((unsigned int)ret->lpVBVtable + vtableBlobSize),
+		(unsigned int)ret->pWrapper
 	);
 
 	if (ret->pWrapper == nullptr)
@@ -600,59 +766,338 @@ EXPORT HRESULT __stdcall Zombie_GetTypeInfoCount(
 } /* Zombie_GetTypeInfoCount */
 
 // https://bbs-vbstreets-ru.translate.goog/viewtopic.php?f=1&t=56212&start=0&hilit=GetMemObj&_x_tr_sch=http&_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=sc
+//
+// Real msvbvm60 disassembly (confirmed): GetMemEvent/PutMemEvent/SetMemEvent are the Get/Let/Set
+// accessors for a WithEvents variable's own storage slot. The first argument is the OWNER class's
+// own ObjectInfoWithOptional* (confirmed via runtime trace), the second is an (unused by our own
+// implementation) index/flag, ppDst is the WithEvents field's own storage address, and pNewObj is
+// the raw new object pointer (confirmed via runtime trace -- not a VARIANTARG, not a pointer-to-
+// pointer). Real msvbvm60's SetMemEvent internally locates the connection via a late-bound,
+// type-library-driven QueryInterface+Invoke dance this project doesn't have infrastructure for
+// (see the plan); this implementation instead locates the compiler-built WithEvents sink block by
+// signature-scanning the owner class's own compiled "Controls" data (EventDispatch.cpp) and wires
+// it up through genuine IConnectionPointContainer/IConnectionPoint (confirmed real msvbvm60 also
+// uses IConnectionPoint::Advise internally, at vtable offset 0x14).
 
-EXPORT int __stdcall GetMemEvent(
-	DWORD			unk1,
-	DWORD			unk2,
-	struct IDispatch** pidObject,
-	struct IDispatch* vtable
+/**
+ * @brief			Returns the vbClassWrapper backing pObj, if pObj is genuinely one of our own
+ *					wrapped objects (checked by confirming its vtable's first slot is our own
+ *					BASIC_CLASS_QueryInterface bridge), nullptr otherwise (e.g. an external COM
+ *					object, or garbage).
+ */
+static vbClassWrapper * TryGetWrapperOf(
+	IDispatch		*pObj
 )
 {
+	if (!pObj)
+	{
+		return nullptr;
+	}
 
+	vba_VBVTable *pAsVBVTable = (vba_VBVTable*)pObj;
+
+	__try
+	{
+		void **pVtbl = (void**)pAsVBVTable->lpVBVtable;
+		if (!pVtbl || pVtbl[0] != (void*)BASIC_CLASS_QueryInterface)
+		{
+			return nullptr;
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return nullptr;
+	}
+
+	return pAsVBVTable->pWrapper;
+}
+
+HRESULT VBFormLoad(
+	IDispatch		*object
+)
+{
+	// dynamic_cast also rejects a genuine wrapper that just isn't a Form (a plain
+	// class) -- Load on a non-Form object correctly fails here instead of silently
+	// doing nothing, now that EnsureWindowCreated is Form-only.
+	vbFormWrapper *pFormWrapper = dynamic_cast<vbFormWrapper*>(TryGetWrapperOf(object));
+	if (!pFormWrapper)
+	{
+		return E_INVALIDARG;
+	}
+
+	return pFormWrapper->EnsureWindowCreated() ? S_OK : E_FAIL;
+}
+
+HRESULT VBFormUnload(
+	IDispatch		*object
+)
+{
+	vbFormWrapper *pFormWrapper = dynamic_cast<vbFormWrapper*>(TryGetWrapperOf(object));
+	if (!pFormWrapper)
+	{
+		return E_INVALIDARG;
+	}
+
+	pFormWrapper->DestroyFormWindow();
+	return S_OK;
+}
+
+bool VBFormTryQueryUnload(
+	void	*pVBVTableRaw,
+	short	*pCancel
+)
+{
+	if (pCancel)
+	{
+		*pCancel = 0;
+	}
+
+	vba_VBVTable *pVBVTable = (vba_VBVTable*)pVBVTableRaw;
+	if (!pVBVTable)
+	{
+		return false;
+	}
+
+	vbFormWrapper *pFormWrapper = dynamic_cast<vbFormWrapper*>(pVBVTable->pWrapper);
+	if (!pFormWrapper)
+	{
+		return false;
+	}
+
+	return pFormWrapper->TryFireQueryUnload(pCancel);
+}
+
+/**
+ * @brief			Disconnects the WithEvents variable's current value (if any) via a real
+ *					IConnectionPoint::Unadvise, using the cookie msvbvm60 itself always stores at
+ *					ppDst+4 (confirmed via disassembly of sub_66059B98).
+ */
+static void DisconnectWithEventsObject(
+	IDispatch		*pOld,
+	IDispatch		**ppDst
+)
+{
+	DEBUG_DECLARE_ASCII_BUFFER_IF_NEEDED();
+
+	IConnectionPointContainer *pCPC = nullptr;
+	if (SUCCEEDED(pOld->QueryInterface(IID_IConnectionPointContainer, (void**)&pCPC)) && pCPC)
+	{
+		IConnectionPoint *pCP = nullptr;
+		if (SUCCEEDED(pCPC->FindConnectionPoint(IID_NULL, &pCP)) && pCP)
+		{
+			DWORD dwCookie = *((DWORD*)ppDst + 1);
+
+			DEBUG_ASCII(
+				"unadvising old sink %.8x, cookie %.8x",
+				(unsigned int)pOld,
+				dwCookie
+			);
+
+			pCP->Unadvise(dwCookie);
+			pCP->Release();
+		}
+		pCPC->Release();
+	}
+
+	pOld->Release();
+}
+
+/**
+ * @brief			Connects a new WithEvents value: stores it (addref'd) into *ppDst, then -- if a
+ *					current owner instance is being tracked (see CurrentInstanceScope) and a
+ *					compiler-built sink block can be found for this connection -- advises a new
+ *					per-connection vbEventSinkInstance onto the new object's connection point, and
+ *					stores the resulting cookie at ppDst+4 (matching real msvbvm60's own layout).
+ */
+static HRESULT ConnectWithEventsObject(
+	ObjectInfoWithOptional	*pOwnerDescriptor,
+	IDispatch				**ppDst,
+	IDispatch				*pNewObj
+)
+{
+	DEBUG_DECLARE_ASCII_BUFFER_IF_NEEDED();
+
+	IDispatch *pOld = *ppDst;
+	if (pOld)
+	{
+		DisconnectWithEventsObject(pOld, ppDst);
+	}
+
+	*ppDst = pNewObj;
+
+	if (!pNewObj)
+	{
+		return S_OK;
+	}
+
+	pNewObj->AddRef();
+
+	void *pOwnerMe = GetCurrentInstance();
+	if (!pOwnerMe)
+	{
+		DEBUG_ASCII(
+			"no current owner instance tracked -- WithEvents connect outside Class_Initialize/"
+			"Class_Terminate isn't supported yet; %.8x stored without connecting its events",
+			(unsigned int)pNewObj
+		);
+		return S_OK;
+	}
+
+	vbClassWrapper *pNewWrapper = TryGetWrapperOf(pNewObj);
+	if (!pNewWrapper)
+	{
+		DEBUG_ASCII(
+			"pNewObj %.8x isn't one of our own wrapped objects; can't locate its sink block",
+			(unsigned int)pNewObj
+		);
+		return S_OK;
+	}
+
+	IDispatch *pStaticSinkBlock = FindEventSinkBlock(pOwnerDescriptor, pNewWrapper->GetObjInfo());
+	if (!pStaticSinkBlock)
+	{
+		DEBUG_ASCII("no compiler-built WithEvents sink block found for this connection");
+		return S_OK;
+	}
+
+	IConnectionPointContainer *pCPC = nullptr;
+	if (FAILED(pNewObj->QueryInterface(IID_IConnectionPointContainer, (void**)&pCPC)) || !pCPC)
+	{
+		DEBUG_ASCII("new source object doesn't support IConnectionPointContainer");
+		return S_OK;
+	}
+
+	IConnectionPoint *pCP = nullptr;
+	if (FAILED(pCPC->FindConnectionPoint(IID_NULL, &pCP)) || !pCP)
+	{
+		pCPC->Release();
+		DEBUG_ASCII("new source object has no connection point");
+		return S_OK;
+	}
+
+	vbEventSinkInstance *pSink = new vbEventSinkInstance(pStaticSinkBlock, pOwnerMe);
+	DWORD dwCookie = 0;
+	HRESULT hr = pCP->Advise(pSink, &dwCookie);
+
+	DEBUG_ASCII(
+		"Advise hr %.8x, sink %.8x, owner %.8x, cookie %.8x",
+		(unsigned int)hr,
+		(unsigned int)pSink,
+		(unsigned int)pOwnerMe,
+		dwCookie
+	);
+
+	if (SUCCEEDED(hr))
+	{
+		*((DWORD*)ppDst + 1) = dwCookie;
+	}
+
+	pSink->Release();
+	pCP->Release();
+	pCPC->Release();
+
+	return S_OK;
+}
+
+/**
+ * @brief			Reads the current value of a WithEvents variable's storage slot, addref'ing it
+ *					for the caller.
+ * @param			ppSrc			Pointer to the WithEvents variable's storage slot.
+ * @param			ppDst			Receives an addref'd copy of *ppSrc.
+ * @returns			S_OK.
+ */
+EXPORT HRESULT __stdcall GetMemEvent(
+	DWORD			dwUnused1,
+	DWORD			dwUnused2,
+	IDispatch		**ppSrc,
+	IDispatch		**ppDst
+)
+{
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
 	DEBUG_WIDE(
-		""
+		"ppSrc %.8x, ppDst %.8x",
+		(unsigned int)ppSrc,
+		(unsigned int)ppDst
 	);
 
-	return E_NOTIMPL;
+	IDispatch *pObj = *ppSrc;
+	*ppDst = pObj;
+
+	if (pObj)
+	{
+		pObj->AddRef();
+	}
+
+	return S_OK;
 } /* GetMemEvent */
 
-EXPORT int __stdcall PutMemEvent(
-	DWORD			unk1,
-	DWORD			unk2,
-	struct IDispatch** pidObject,
-	struct IDispatch* vtable
+/**
+ * @brief			Sets a WithEvents variable's storage slot to a new object.
+ * @param			dwOwnerDescriptor	The owner class's own ObjectInfoWithOptional* (confirmed via
+ *										runtime trace).
+ * @param			ppDst			Pointer to the WithEvents variable's storage slot.
+ * @param			pNewObj			The new object reference (confirmed via runtime trace: this is
+ *									the raw object pointer itself, not a pointer to it).
+ * @returns			S_OK.
+ */
+EXPORT HRESULT __stdcall PutMemEvent(
+	DWORD			dwOwnerDescriptor,
+	DWORD			dwUnused2,
+	IDispatch		**ppDst,
+	IDispatch		*pNewObj
 )
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
 	DEBUG_WIDE(
-		""
+		"dwOwnerDescriptor %.8x, dwUnused2 %.8x, ppDst %.8x, pNewObj %.8x",
+		dwOwnerDescriptor,
+		dwUnused2,
+		(unsigned int)ppDst,
+		(unsigned int)pNewObj
 	);
 
-	// This calls PutMemObj internally, with the pidObject and vtable args.
-	// Declare Function PutMemObj Lib "msvbvm60" (ByVal pDst As Long, ByRef NewObj As Object) As Long
-
-	return E_NOTIMPL;
+	return ConnectWithEventsObject((ObjectInfoWithOptional*)dwOwnerDescriptor, ppDst, pNewObj);
 } /* PutMemEvent */
 
-EXPORT int __stdcall SetMemEvent(
-	DWORD			unk1,
-	DWORD			unk2,
-	struct IDispatch** pidObject,
-	struct IDispatch* vtable
+/**
+ * @brief			Sets a WithEvents variable's storage slot to a new object (Set-statement variant).
+ * @param			dwOwnerDescriptor	The owner class's own ObjectInfoWithOptional* (confirmed via
+ *										runtime trace).
+ * @param			ppDst			Pointer to the WithEvents variable's storage slot.
+ * @param			pNewObj			The new object reference (raw pointer, see PutMemEvent).
+ * @returns			S_OK.
+ */
+EXPORT HRESULT __stdcall SetMemEvent(
+	DWORD			dwOwnerDescriptor,
+	DWORD			dwUnused2,
+	IDispatch		**ppDst,
+	IDispatch		*pNewObj
 )
 {
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
 	DEBUG_WIDE(
-		""
+		"dwOwnerDescriptor %.8x, dwUnused2 %.8x, ppDst %.8x, pNewObj %.8x",
+		dwOwnerDescriptor,
+		dwUnused2,
+		(unsigned int)ppDst,
+		(unsigned int)pNewObj
 	);
 
-	return E_NOTIMPL;
+	return ConnectWithEventsObject((ObjectInfoWithOptional*)dwOwnerDescriptor, ppDst, pNewObj);
 } /* SetMemEvent */
 
+/**
+ * @brief			Fires a class event: walks pMe's connection point sinks and calls Invoke(dispId,
+ *					...) on each. ABI confirmed via disassembly of the real msvbvm60's
+ *					__vbaRaiseEvent/RaiseEventOnBasicClass this session.
+ * @param			unk1			pMe -- the raising object's own vba_VBVTable*.
+ * @param			unk2			dispId of the event being raised (1-based, declaration order).
+ * @param			argCount		Number of event arguments.
+ * @param			...				argCount VARIANTARG values, passed by value.
+ */
 EXPORT HRESULT __vbaRaiseEvent(
 	DWORD			unk1,
 	DWORD			unk2,
@@ -667,13 +1112,21 @@ EXPORT HRESULT __vbaRaiseEvent(
 	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
 	DEBUG_WIDE(
-		"argCount = %d",
+		"pMe %.8x, dispId %.8x, argCount = %d",
+		unk1,
+		unk2,
 		argCount
 	);
 
+	vba_VBVTable *pMe = (vba_VBVTable*)unk1;
+	if (pMe && pMe->pWrapper)
+	{
+		pMe->pWrapper->RaiseEvent((DISPID)unk2, (VARIANTARG*)args, (DWORD)argCount);
+	}
+
 	va_end(args);
 
-	return E_NOTIMPL;
+	return S_OK;
 } /* __vbaRaiseEvent */
 
 /**
@@ -702,6 +1155,11 @@ EXPORT IUnknown * __stdcall __vbaObjSet(
 	}
 
 	*ppiuDest = piuSrc;
+
+	DEBUG_WIDE(
+		"returning %.8x",
+		(unsigned int)*ppiuDest
+	);
 
 	return *ppiuDest;
 } /* __vbaObjSet */
@@ -1031,6 +1489,80 @@ EXPORT void __cdecl __vbaLateMemCall(
 		vbaRaiseException(VBA_EXCEPTION_AUTOMATION_ERROR, &excepInfo); // TODO: Check if this exception is right
 	}
 } /* __vbaLateMemCall */
+
+EXPORT void __stdcall __vbaVarLateMemSt(
+	VARIANTARG		* pvargObject,
+	BSTR			bstrMethodName,
+	int				argCount,
+	...
+)
+{
+	HRESULT			hr;
+
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"Object %.8x, bstrMethodName %.8x, argCount %.8x",
+		(unsigned int)pvargObject,
+		(unsigned int)bstrMethodName,
+		argCount
+	);
+
+
+	IDispatch* pidObject;
+
+	/* Get the IDispatch object from the Variant */
+	pidObject = __vbaObjVar(pvargObject);
+
+	if (!pidObject)
+	{
+		vbaRaiseException(VBA_EXCEPTION_OBJECT_VARIABLE_OR_WITH_BLOCK_VARIABLE_NOT_SET);
+		return;
+	}
+
+	DISPID			dispID;
+
+	/* Get the ID of the method */
+	hr = pidObject->GetIDsOfNames(
+		IID_NULL,
+		&bstrMethodName,
+		1,
+		LOCALE_USER_DEFAULT,
+		&dispID
+	);
+
+	DEBUG_WIDE(
+		"GetIDsOfNames = %.8x, dispID = %.8x",
+		(unsigned int)hr,
+		dispID
+	);
+
+	if (hr != S_OK)
+	{
+		DEBUG_WIDE(
+			"GetIDsOfNames failed! GetLastError() = %.8x",
+			GetLastError()
+		);
+
+		vbaRaiseException(VBA_EXCEPTION_AUTOMATION_ERROR); // TODO: Check if this exception is right
+
+		return;
+	}
+
+	va_list args;
+	va_start(args, argCount);
+
+	DISPPARAMS		dispParamsInput;
+
+	dispParamsInput.cArgs = argCount;
+	dispParamsInput.rgvarg = (VARIANTARG*)args;
+
+	va_end(args);
+
+	dispParamsInput.cNamedArgs = 0;
+	dispParamsInput.rgdispidNamedArgs = nullptr;
+
+} /* __vbaVarLateMemSt */
 
 /**
  * @brief			Invokes a method of a Variant object, and returns the return value of the invoke.

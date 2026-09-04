@@ -84,6 +84,18 @@
     <ClCompile Include="ObjectManipulation.cpp">
       <Filter>Archivos de origen\ObjectInterface</Filter>
     </ClCompile>
+    <ClCompile Include="EventDispatch.cpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="FormWindow.cpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="FormProperties.cpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="FormWrapper.cpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClCompile>
     <ClCompile Include="DllObjectInterface.cpp">
       <Filter>Archivos de origen\VBObjects</Filter>
     </ClCompile>
@@ -158,6 +170,21 @@
     <ClInclude Include="ObjectManipulation.hpp">
       <Filter>Archivos de origen\ObjectInterface</Filter>
     </ClInclude>
+    <ClInclude Include="EventDispatch.hpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="FormWindow.hpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="FormProperties.hpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassWrapper.hpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="FormWrapper.hpp">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
+    </ClInclude>
     <ClInclude Include="StringManipulation.hpp">
       <Filter>Archivos de origen\String</Filter>
     </ClInclude>
@@ -194,6 +221,9 @@
     </Midl>
     <Midl Include="App.idl">
       <Filter>Archivos de origen\VBObjects\VBGlobal\App</Filter>
+    </Midl>
+    <Midl Include="Form.idl">
+      <Filter>Archivos de origen\ObjectInterface</Filter>
     </Midl>
   </ItemGroup>
   <ItemGroup>

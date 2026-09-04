@@ -225,7 +225,7 @@ EXPORT BSTR __stdcall rtcEnvironBstr(
 				dwSize
 			);
 
-			delete buffer;
+			delete[] buffer;
 
 			if (!bstrRet)
 			{

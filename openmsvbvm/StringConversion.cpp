@@ -40,10 +40,10 @@ EXPORT BSTR __stdcall __vbaStrToAnsi(
 		(unsigned int)bstrSrc
 	);
 
-	if (!pbstrOut)
+	if (!pbstrOut || !bstrSrc)
 	{
 		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
-		return *pbstrOut;
+		return nullptr;
 	}
 
 	int iWideStrSize = 0;

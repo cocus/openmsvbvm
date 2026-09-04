@@ -25,13 +25,36 @@ public:
 			(unsigned int)mode
 		);
 
+		errno_t err = EINVAL;
 		if (mode & VB_FMODE_ACCESS_WRITE)
 		{
-			_wfopen_s(&sysHandle, file.c_str(), L"wb+");
+			err = _wfopen_s(&sysHandle, file.c_str(), L"wb+");
+		}
+		else if (mode & VB_FMODE_OUTPUT)
+		{
+			err = _wfopen_s(&sysHandle, file.c_str(), L"wb");
 		}
 		else //if (mode & VB_FMODE_ACCESS_READ) // TODO!!!
 		{
-			_wfopen_s(&sysHandle, file.c_str(), L"rb+");
+			err = _wfopen_s(&sysHandle, file.c_str(), L"rb+");
+		}
+
+		if (err != 0)
+		{
+			DEBUG_WIDE_OBJ(
+				"_wfopen_s failed, err = %.8x",
+				(unsigned int)err
+			);
+			if (GetLastError() == ERROR_SHARING_VIOLATION)
+			{
+				vbaRaiseException(VBA_EXCEPTION_PERMISSION_DENIED);
+			}
+			else
+			{
+				vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+			}
+			sysHandle = nullptr;
+			return;
 		}
 	}
 
@@ -118,6 +141,78 @@ public:
 		}
 
 		size_t ret = fwrite(pData, 1, uiSize, sysHandle);
+
+		DEBUG_WIDE_OBJ(
+			"fwrite wrote %.8x bytes, and we aimed for %.8x bytes",
+			(unsigned int)ret,
+			(unsigned int)uiSize
+		);
+	} /* put3 */
+
+
+	void print(
+		const BSTR		pData
+	)
+	{
+		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+		DEBUG_WIDE_OBJ(
+			"pData %.8x",
+			(unsigned int)pData
+		);
+
+		/* This should not happen, but... */
+		if (pData == nullptr)
+		{
+			return;
+		}
+
+		UINT uiSize = SysStringLen(pData);
+
+		/* Get the size of the string */
+		if (uiSize == 0)
+		{
+			DEBUG_WIDE_OBJ(
+				"wcslen = 0, could not get the size of the buffer to write"
+			);
+			return;
+		}
+
+		/* Get how many bytes we'll need to allocate */
+		int size_needed = WideCharToMultiByte(
+			CP_ACP,
+			0,
+			(LPCWCH)pData,
+			uiSize,
+			NULL,
+			0,
+			0,
+			0
+		);
+
+		char* buffer = new char[size_needed+1];
+
+		if (!buffer)
+		{
+			vbaRaiseException(VBA_EXCEPTION_OUT_OF_MEMORY);
+			return;
+		}
+
+		int iChars = WideCharToMultiByte(
+			CP_ACP,
+			0,
+			(LPCWCH)pData,
+			uiSize+1,
+			buffer,
+			size_needed + 1,
+			0,
+			0
+		);
+
+		size_t ret = fwrite(buffer, 1, uiSize, sysHandle);
+		fwrite("\r\n", 1, 2, sysHandle); // add the CR+LF
+
+		delete[] buffer;
 
 		DEBUG_WIDE_OBJ(
 			"fwrite wrote %.8x bytes, and we aimed for %.8x bytes",
@@ -399,3 +494,30 @@ EXPORT void __stdcall __vbaPut3(
 		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
 	}
 } /* __vbaPut3 */
+
+EXPORT int __vbaPrintFile(
+	LPVOID			descriptor,
+	unsigned int	uiVBHandle,
+	const BSTR		pData
+)
+{
+	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+
+	DEBUG_WIDE(
+		"descriptor %.8x, pData %.8x, uiVBHandle %.8x",
+		(unsigned int)descriptor,
+		(unsigned int)pData,
+		(unsigned int)uiVBHandle
+	);
+
+	vbaFileAbstraction* obj;
+	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+	{
+		obj->print(pData);
+	}
+	else
+	{
+		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+	}
+	return 0;
+}

@@ -98,6 +98,20 @@ struct ProjectInfo2
 };
 static_assert(sizeof(ProjectInfo2) == 0x28, "ProjectInfo2 size is incorrect");
 
+/**
+ * lpObjectArray (below) is genuinely walkable from the compiled EXE's own VBHeader --
+ * confirmed live by reading it out of this project's own Debug\Proyecto1.exe (a
+ * VBHeader* is already captured at startup as g_pvbhGlobal, see dllmain.cpp):
+ * VBHeader.lpProjectData -> ProjectData.lpObjectTable -> here -> lpObjectArray, for
+ * wObjectsInUse entries. This is NOT an array of pointers (despite Alex Ionescu's "VB
+ * Image Internal Structure Format" doc calling it "Pointer to Object Descriptors",
+ * ambiguous on this point) -- it's PublicObjectDescriptor structs stored INLINE,
+ * contiguous, each exactly sizeof(PublicObjectDescriptor) (0x30) bytes apart; dumping
+ * a real 5-object project's array byte-for-byte is what proved this. VBHeader
+ * .wFormCount separately counts just the Form/MDIForm entries within this same array
+ * (see PublicObjectDescriptor.fObjectType's doc comment for how those are told apart
+ * from Class/Module entries).
+ */
 struct ObjectTable
 {
 	LPVOID lpHeapLink;							/* Unused after compilation, always 0. */
@@ -111,7 +125,7 @@ struct ObjectTable
 	WORD wTotalObjects;							/* Total objects present in Project. */
 	WORD wCompiledObjects;						/* Equal to above after compiling. */
 	WORD wObjectsInUse;							/* Usually equal to above after compile. */
-	LPVOID lpObjectArray;						/* Pointer to Object Descriptors */
+	struct PublicObjectDescriptor* lpObjectArray; /* Inline array of wObjectsInUse PublicObjectDescriptors -- see this struct's own doc comment above. */
 	WORD fIdeFlag;								/* Flag/Pointer used in IDE only. */
 	LPVOID lpIdeData;							/* Flag/Pointer used in IDE only. */
 	LPVOID lpIdeData2;							/* Flag/Pointer used in IDE only. */
@@ -150,7 +164,27 @@ struct PublicObjectDescriptor
 	DWORD dwMethodCount;						/* Number of Methods in Object */
 	LPCSTR* lpMethodNames;						/* If present, pointer to Method names array */
 	DWORD bStaticVars;							/* Offset to where to copy Static Variables */
-	DWORD fObjectType;							/* Flags defining the Object Type */
+	/**
+	 * Flags defining the Object Type -- a per-kind bitmask, not a small sequential
+	 * enum. Confirmed live (not from any external doc) by dumping this field for
+	 * every entry of a real 5-object project's ObjectTable.lpObjectArray (1 Module, 3
+	 * Class Modules, 1 Form) plus a separate calibration build with just an MDIForm:
+	 *   Module        0x018001  (bits 0, 15, 16)
+	 *   Class Module  0x118003  (bits 0, 1, 15, 16, 20)
+	 *   Form/MDIForm  0x018083  (bits 0, 1, 7, 15, 16)
+	 * Bits 0/15/16 are common to every kind seen so far (some generic "compiled"/
+	 * valid-descriptor markers, not type-discriminating). Bit 1 is set for both
+	 * instantiable kinds (Class, Form) and clear for Module (which can't be `New`'d)
+	 * -- likely a generic "is a class-like/instantiable object" flag. The
+	 * kind-specific discriminator bits confirmed so far: bit 7 (0x80) = Form or
+	 * MDIForm (this project's IsFormLikeDescriptor, ObjectManipulation.cpp, tests
+	 * exactly this bit -- MDIForm sharing it with Form was the calibration's main new
+	 * finding), bit 20 (0x100000) = plain Class Module. UserControl/UserDocument/
+	 * PropertyPage haven't been calibrated (no test project built for them yet) so
+	 * their bit(s) are still unknown -- compile a minimal project containing one and
+	 * dump this field the same way to extend this table.
+	 */
+	DWORD fObjectType;
 	DWORD dwNull;								/* Not valid after compilation */
 };
 static_assert(sizeof(PublicObjectDescriptor) == 0x30, "PublicObjectDescriptor size is incorrect");
@@ -185,7 +219,7 @@ struct ObjectInfoWithOptional
 
 struct VBHeader
 {
-	char szVbMagic[4];							/* “VB5!” String */
+	char szVbMagic[4];							/* ï¿½VB5!ï¿½ String */
 	WORD wRuntimeBuild;							/* Build of the VB6 Runtime */
 	char szLangDll[14];							/* Language Extension DLL */
 	char szSecLangDll[14];						/* 2nd Language Extension DLL */
@@ -201,6 +235,17 @@ struct VBHeader
 	WORD wFormCount;							/* Number of forms present */
 	WORD wExternalCount;						/* Number of external controls */
 	DWORD dwThunkCount;							/* Number of thunks to create */
+	/* Checked live whether this is a "list of this project's Forms" (as a name like
+	   "GUI Table" suggests, and as this project briefly hoped when it confirmed
+	   ObjectTable.lpObjectArray is real/walkable -- see that struct's doc comment):
+	   it is NOT. In a real compiled EXE this instead points to a small fixed record
+	   -- a leading DWORD (seen live as 0x50) followed by what reads as a 16-byte GUID,
+	   then mostly zero bytes -- with no pointer anywhere in it back to any Form's
+	   PublicObjectDescriptor. Whatever this table actually is (a guess: per-project
+	   GUI/toolbox resource metadata, unrelated to enumerating Forms), it is NOT the
+	   way to enumerate a project's Forms -- that has to come from walking
+	   ObjectTable.lpObjectArray and testing PublicObjectDescriptor.fObjectType's
+	   Form/MDIForm bit (0x80) on each entry, cross-checked against wFormCount above. */
 	LPVOID lpGuiTable;							/* Pointer to GUI Table */
 	LPVOID lpExternalTable;						/* Pointer to External Table */
 	struct tagREGDATA* lpComRegisterData;		/* Pointer to COM Information */

@@ -1,5 +1,6 @@
 #include "vba_internal.h"
 #include "Exceptions.hpp"
+#include "ObjectManipulation.hpp"
 
 // MIDL-generated header for this object
 #include "VBGlobal.h"
@@ -52,7 +53,8 @@ public:
 		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
 		DEBUG_WIDE_OBJ("object %.8x", (unsigned int)object);
-		return E_NOTIMPL;
+
+		return VBFormLoad(object); // TODO: Form or Control
 	}
 
 	/* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE Unload(
@@ -62,7 +64,7 @@ public:
 
 		DEBUG_WIDE_OBJ("object %.8x", (unsigned int)object);
 
-		return E_NOTIMPL;
+		return VBFormUnload(object); // TODO: Form or Control
 	}
 
 	/* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_App(
@@ -73,7 +75,7 @@ public:
 		DEBUG_WIDE_OBJ("pdispRetVal %.8x", (unsigned int)pdispRetVal);
 
 		extern HRESULT Create_App_Instance(IUnknown **ppApp);
-		
+
 		HRESULT hr = Create_App_Instance(reinterpret_cast<IUnknown**>(pdispRetVal));
 
 		return hr;

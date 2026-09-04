@@ -79,3 +79,33 @@ HRESULT objIDispatchGetDefaultValue(
 	IDispatch		* pidObject,
 	VARIANTARG		* pvargValueOut
 );
+
+/**
+ * @brief			Real implementation behind the VB "Load"/"Unload" statements for a
+ *					Form-derived object: creates (Load) or destroys (Unload) its real
+ *					Win32 window. object must be one of this project's own wrapped
+ *					objects (see TryGetWrapperOf in ObjectManipulation.cpp); anything
+ *					else returns E_INVALIDARG.
+ */
+HRESULT VBFormLoad(
+	IDispatch		* object
+);
+
+HRESULT VBFormUnload(
+	IDispatch		* object
+);
+
+/**
+ * @brief			Attempts to fire Form_QueryUnload on a Form-derived object's
+ *					compiled instance (pVBVTableRaw is its vba_VBVTable*, opaque here)
+ *					before its window actually closes. *pCancel is set to 0 up front
+ *					and left at whatever the handler set it to on return. Returns
+ *					false (with *pCancel unchanged at 0) if no handler could safely be
+ *					identified/invoked -- see the scoped heuristic and its limitations
+ *					documented on vbFormWrapper::TryFireQueryUnload in
+ *					ObjectManipulation.cpp.
+ */
+bool VBFormTryQueryUnload(
+	void			* pVBVTableRaw,
+	short			* pCancel
+);
