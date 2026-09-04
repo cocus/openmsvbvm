@@ -61,8 +61,12 @@ Sub Main()
     
     'Call ClassEventTest
     
+    'Call MidAscTest
+
+    'Call MathTest
+
     Call FormTest
-    
+
     Debug.Print "ASD"
     
     MsgBox "END"
@@ -335,6 +339,42 @@ Private Sub ClassEventTest()
     Set objClass2 = New clsTestClass2
     objClass2.Raise "This is ClassEventTest()"
     Set objClass2 = Nothing
+End Sub
+
+Private Sub MidAscTest()
+    ' Exercises the Tier 1 cross-check functions (rtcMidCharVar, rtcAnsiValueBstr,
+    ' __vbaLenBstr, __vbaStrVarMove indirectly via Mid$'s return value) using the
+    ' same keygen-style loop as born2c0de's disassembly tutorial.
+    Dim n As String
+    Dim i As Byte
+    Dim tmp1 As Long
+
+    n = "Sanchit"
+    For i = 1 To Len(n)
+        tmp1 = tmp1 + Asc(Mid(n, i, 1))
+    Next i
+
+    MsgBox "Sum of Asc(Mid$) = " & tmp1 & " (expected 714)" & vbCrLf & _
+           "Mid$(n, 3) = '" & Mid(n, 3) & "' (expected 'nchit')" & vbCrLf & _
+           "Mid$(n, 100) = '" & Mid(n, 100) & "' (expected '')"
+End Sub
+
+Private Sub MathTest()
+    ' Exercises the _CIxxx / __vbaFpI2 fixes: these used to be complete no-op stubs
+    ' with the wrong calling convention, so every one of these would previously have
+    ' returned 0 or garbage instead of the expected value.
+    Dim msg As String
+
+    msg = "Sin(1.5707963267948966)=" & Sin(1.5707963267948966) & " (expect ~1)" & vbCrLf
+    msg = msg & "Cos(3.14159265358979)=" & Cos(3.14159265358979) & " (expect ~-1)" & vbCrLf
+    msg = msg & "Sqr(16)=" & Sqr(16) & " (expect 4)" & vbCrLf
+    msg = msg & "Atn(1)*4=" & (Atn(1) * 4) & " (expect ~3.14159265)" & vbCrLf
+    msg = msg & "Log(1)=" & Log(1) & " (expect 0)" & vbCrLf
+    msg = msg & "Exp(1)=" & Exp(1) & " (expect ~2.71828)" & vbCrLf
+    msg = msg & "Tan(0)=" & Tan(0) & " (expect 0)" & vbCrLf
+    msg = msg & "CInt(4.6)=" & CInt(4.6) & " (expect 5)"
+
+    MsgBox msg
 End Sub
 
 Private Sub FormTest()

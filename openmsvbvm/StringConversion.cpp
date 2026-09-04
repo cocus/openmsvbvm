@@ -1,4 +1,5 @@
 #include "vba_internal.h"
+#include "Logging.hpp"
 #include "Exceptions.hpp"
 #include "vba_Locale.h"
 
@@ -6,17 +7,17 @@
 
 #include "vba_ole_bridge_macros.h"
 
-#define BUNCH_OF_BSTR_CONVERSIONS(declr)																	\
-	declr(BSTR, double, __vbaStrR8, VarBstrFromR8, 0, "in '%lf'")					/* double -> BSTR */	\
-	declr(BSTR, float, __vbaStrR4, VarBstrFromR4, 0, "in '%f'")						/* float -> BSTR */		\
-	declr(BSTR, LONG, __vbaStrI4, VarBstrFromI4, 0, "in '%d'")						/* long -> BSTR */		\
-	declr(BSTR, SHORT, __vbaStrI2, VarBstrFromI2, 0, "in '%d'")						/* SHORT -> BSTR */		\
-	declr(BSTR, BYTE, __vbaStrUI1, VarBstrFromI2, 0, "in '%d'")						/* BYTE -> BSTR */		\
-	declr(BSTR, SHORT, __vbaStrBool, VarBstrFromBool, VAR_LOCALBOOL, "in '%d'")		/* SHORT -> BSTR */		\
-	declr(BSTR, CY, __vbaStrCy, VarBstrFromCy , 0, "in '%ld'")						/* CY -> BSTR */		\
-	declr(BSTR, DATE, __vbaStrDate, VarBstrFromDate , 0, "in '%ld'")				/* DATE -> BSTR */		\
+#define BUNCH_OF_BSTR_CONVERSIONS(declr) \
+    declr(BSTR, double, __vbaStrR8, VarBstrFromR8, 0)                    /* double -> BSTR */ \
+        declr(BSTR, float, __vbaStrR4, VarBstrFromR4, 0)                 /* float -> BSTR */ \
+        declr(BSTR, LONG, __vbaStrI4, VarBstrFromI4, 0)                  /* long -> BSTR */ \
+        declr(BSTR, SHORT, __vbaStrI2, VarBstrFromI2, 0)                 /* SHORT -> BSTR */ \
+        declr(BSTR, BYTE, __vbaStrUI1, VarBstrFromI2, 0)                 /* BYTE -> BSTR */ \
+        declr(BSTR, SHORT, __vbaStrBool, VarBstrFromBool, VAR_LOCALBOOL) /* SHORT -> BSTR */ \
+        declr(BSTR, CY, __vbaStrCy, VarBstrFromCy, 0)                    /* CY -> BSTR */ \
+        declr(BSTR, DATE, __vbaStrDate, VarBstrFromDate, 0)              /* DATE -> BSTR */
 
-#pragma warning (disable : 4477) /* This warning is created by converting types in sprintf */
+#pragma warning(disable : 4477) /* This warning is created by converting types in sprintf */
 
 BUNCH_OF_BSTR_CONVERSIONS(DECLARE_VBA_CONVERSION_BRIDGE_TO_OLE_CONVERSION);
 
@@ -27,76 +28,41 @@ BUNCH_OF_BSTR_CONVERSIONS(DECLARE_VBA_CONVERSION_BRIDGE_TO_OLE_CONVERSION);
  * @param			bstrSrc			Source BSTR.
  * @return			*pbstrOut always.
  */
-EXPORT BSTR __stdcall __vbaStrToAnsi(
-	BSTR	* pbstrOut,
-	BSTR	bstrSrc
-)
+EXPORT BSTR __stdcall __vbaStrToAnsi(BSTR* pbstrOut, BSTR bstrSrc)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"pbstrOut %.8x, pbstrOut %.8x",
-		(unsigned int)pbstrOut,
-		(unsigned int)bstrSrc
-	);
+    LOG(LOG_DEBUG) << L"pbstrOut " << vbl::Hex((unsigned long)pbstrOut) << L", pbstrOut " << vbl::Hex((unsigned long)bstrSrc);
 
-	if (!pbstrOut || !bstrSrc)
-	{
-		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
-		return nullptr;
-	}
+    if (!pbstrOut || !bstrSrc)
+    {
+        vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
+        return nullptr;
+    }
 
-	int iWideStrSize = 0;
+    int iWideStrSize = 0;
 
-	if (bstrSrc)
-	{
-		iWideStrSize = strSafeGetLength(bstrSrc);
-	}
+    if (bstrSrc)
+    {
+        iWideStrSize = strSafeGetLength(bstrSrc);
+    }
 
-	/* Get how many bytes we'll need to allocate */
-	int size_needed = WideCharToMultiByte(
-		CP_ACP,
-		0,
-		(LPCWCH)bstrSrc,
-		iWideStrSize,
-		NULL,
-		0,
-		0,
-		0
-	);
+    /* Get how many bytes we'll need to allocate */
+    int size_needed = WideCharToMultiByte(CP_ACP, 0, (LPCWCH)bstrSrc, iWideStrSize, NULL, 0, 0, 0);
 
-	DEBUG_WIDE(
-		"size_needed = %.8x",
-		size_needed
-	);
+    LOG(LOG_DEBUG) << L"size_needed = " << vbl::Hex((unsigned long)size_needed);
 
-	/* This is really weird, but VB uses a BSTR as storage for an ANSI string */
-	*pbstrOut = SysAllocStringByteLen(
-		0,
-		size_needed
-	);
+    /* This is really weird, but VB uses a BSTR as storage for an ANSI string */
+    *pbstrOut = SysAllocStringByteLen(0, size_needed);
 
-	if (!*pbstrOut)
-	{
-		vbaRaiseException(VBA_EXCEPTION_OUT_OF_STRING_SPACE);
-		return *pbstrOut;
-	}
+    if (!*pbstrOut)
+    {
+        vbaRaiseException(VBA_EXCEPTION_OUT_OF_STRING_SPACE);
+        return *pbstrOut;
+    }
 
-	int iChars = WideCharToMultiByte(
-		CP_ACP,
-		0,
-		(LPCWCH)bstrSrc,
-		iWideStrSize + 1,
-		(LPSTR)*pbstrOut,
-		size_needed + 1,
-		0,
-		0
-	);
+    int iChars = WideCharToMultiByte(CP_ACP, 0, (LPCWCH)bstrSrc, iWideStrSize + 1, (LPSTR)*pbstrOut, size_needed + 1, 0, 0);
 
-	DEBUG_WIDE(
-		"MultiByteToWideChar %.8x",
-		iChars
-	);
+    LOG(LOG_DEBUG) << L"MultiByteToWideChar " << vbl::Hex((unsigned long)iChars);
 
-	return *pbstrOut;
+    return *pbstrOut;
 } /* __vbaStrToAnsi */

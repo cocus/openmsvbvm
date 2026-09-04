@@ -5,6 +5,7 @@ Class=clsTestClass3; clsTestClass.cls
 Class=clsTestClass1; clsTestClass1.cls
 Class=clsTestClass2; clsTestClass2.cls
 Form=Form1.frm
+Form=Form2.frm
 Startup="Sub Main"
 HelpFile=""
 Title="Proyecto1sddasdasd"

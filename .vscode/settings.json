@@ -1,0 +1,35 @@
+{
+  "editor.formatOnSave": true,
+  "editor.rulers": [130],
+  "files.encoding": "utf8",
+  "files.eol": "\r\n",
+  "[c]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+  "[cuda-cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+  "C_Cpp.clang_format_style": "file",
+  "C_Cpp.clang_format_fallbackStyle": "Microsoft",
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.formatText": true,
+  "C_Cpp.codeAnalysis.runAutomatically": true,
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "C_Cpp.codeAnalysis.clangTidy.args": [
+    "--header-filter=^.*openmsvbvm.*$"
+  ],
+  "C_Cpp.codeAnalysis.minimumSeverity": "info",
+  "C_Cpp.intelliSenseEngineFallback": "Disabled"
+}

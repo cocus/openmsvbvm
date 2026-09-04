@@ -1,4 +1,5 @@
 #include "vba_internal.h"
+#include "Logging.hpp"
 #include "Exceptions.hpp"
 
 #include "StringManipulation.hpp"
@@ -15,47 +16,39 @@ extern void GetVBProjectTitle(BSTR* rhs);
  * @param			pvarHelpContext		Help context ID (only if pvarHelpFile is specified). Can be omitted.
  * @returns			An int with the result of the message box (which button was selected).
  */
-EXPORT int __stdcall rtcMsgBox(
-	VARIANTARG		*pvargMessage,
-	UINT			uType,
-	VARIANTARG		*pvargTitle,
-	VARIANTARG		*pvarHelpFile,
-	VARIANTARG		*pvarHelpContext
-)
+EXPORT int __stdcall rtcMsgBox(VARIANTARG* pvargMessage, UINT uType, VARIANTARG* pvargTitle, VARIANTARG* pvarHelpFile, VARIANTARG* pvarHelpContext)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"msg %.8x, uType %.8x, title %.8x, a4 %.8x, a5 %.8x",
-		(unsigned int)pvargMessage,
-		uType,
-		(unsigned int)pvargTitle,
-		(unsigned int)pvarHelpFile,
-		(unsigned int)pvarHelpContext
-	);
+    LOG(LOG_DEBUG) << L"msg " << vbl::Hex((unsigned long)pvargMessage) << L", uType " << vbl::Hex((unsigned long)uType)
+                   << L", title " << vbl::Hex((unsigned long)pvargTitle) << L", a4 " << vbl::Hex((unsigned long)pvarHelpFile)
+                   << L", a5 " << vbl::Hex((unsigned long)pvarHelpContext);
 
-	BSTR message = __vbaStrErrVarCopy(pvargMessage);
-	BSTR title = __vbaStrErrVarCopy(pvargTitle);
+    /* Confirmed via real msvbvm60.dll disassembly (ordinal 595): each of the three
+       button/icon/default-button sub-fields of uType is range-checked, and if ANY of
+       them is out of range, the WHOLE value is silently reset to 0 (vbOKOnly, no icon,
+       default button 1) rather than just clamping the offending sub-field. */
+    if ((uType & 0xF) > 5 || (uType & 0xF0) > 0x40 || (uType & 0xF00) > 0x300)
+    {
+        uType = 0;
+    }
 
-	if (!title)
-	{
-		GetVBProjectTitle(&title);
-	}
-	if (!message)
-	{
-		message = SysAllocString(L"");
-	}
+    BSTR message = __vbaStrErrVarCopy(pvargMessage);
+    BSTR title = __vbaStrErrVarCopy(pvargTitle);
 
-	// TODO: Whenever forms become available, use the topmost form's handle for the hWnd argument
-	int ret = MessageBoxW(
-		0,
-		message,
-		title,
-		uType
-	);
+    if (!title)
+    {
+        GetVBProjectTitle(&title);
+    }
+    if (!message)
+    {
+        message = SysAllocString(L"");
+    }
 
-	__vbaFreeStr(&message);
-	__vbaFreeStr(&title);
+    // TODO: Whenever forms become available, use the topmost form's handle for the hWnd argument
+    int ret = MessageBoxW(0, message, title, uType);
 
-	return ret;
+    __vbaFreeStr(&message);
+    __vbaFreeStr(&title);
+
+    return ret;
 } /* rtcMsgBox */

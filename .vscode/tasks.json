@@ -1,0 +1,77 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "windows": {
+    "options": {
+      "shell": {
+        "executable": "C:\\Windows\\System32\\cmd.exe",
+        "args": ["/d", "/c"]
+      },
+      "env": {
+        "PATH": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64;${env:PATH}"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "label": "Build (Debug|Win32)",
+      "type": "shell",
+      "command": "MSBuild.exe",
+      "args": [
+        "openmsvbvm.sln",
+        "/m",
+        "/p:Configuration=Debug",
+        "/p:Platform=x86"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build (Release|Win32)",
+      "type": "shell",
+      "command": "MSBuild.exe",
+      "args": [
+        "openmsvbvm.sln",
+        "/m",
+        "/p:Configuration=Release",
+        "/p:Platform=x86"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Clean (Debug|Win32)",
+      "type": "shell",
+      "command": "MSBuild.exe",
+      "args": [
+        "openmsvbvm.sln",
+        "/t:Clean",
+        "/p:Configuration=Debug",
+        "/p:Platform=x86"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build VB6 test app (Proyecto1.exe)",
+      "type": "shell",
+      "command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\VB98\\VB6.EXE\"",
+      "args": [
+        "/make",
+        "Proyecto1.vbp",
+        "/outdir",
+        "."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/Debug"
+      },
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

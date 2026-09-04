@@ -19,7 +19,7 @@ struct SinkConnection
 
 /**
  * Minimal, real IConnectionPoint implementation backing a class's outgoing event
- * interface. Lifetime is tied to its owning vbClassWrapper (it's held as a value
+ * interface. Lifetime is tied to its owning vbObjectWrapper (it's held as a value
  * member, not separately heap-allocated), so AddRef/Release are no-ops rather than
  * an independent refcount. Always answers as the (single) connection point for
  * whatever interface FindConnectionPoint on the container was asked for -- a class
@@ -112,28 +112,64 @@ IDispatch * FindEventSinkBlock(
 void * GetHandlerThunk(IDispatch *pSinkBlock, DISPID dispId);
 
 /**
+ * Returns the ControlInfo entry (see vba_structures.h's own doc comment on that
+ * struct) representing the Form/container itself within its own opt.lpControls array
+ * -- the one entry with dwIndex == 0xFFFFFFFF, confirmed live across every
+ * calibration build checked so far. Used to reach the Form's own fixed-slot
+ * Load/QueryUnload/etc. thunks via GetFixedEventThunk below, replacing the older
+ * argument-byte-count heuristic (FindIntrinsicThunkByArgBytes) this project used
+ * before this table was found.
+ */
+ControlInfo * FindOwnFormControlInfo(ObjectInfoWithOptional *pOwnerDescriptor);
+
+/**
+ * Returns the REAL placed control whose declaration/TabIndex-order position
+ * (dwIndex's low WORD, 1-based, minus 1) equals accessorIndex (0-based) -- see
+ * ControlInfo's doc comment (vba_structures.h) and __vbaNew (ObjectManipulation.cpp)
+ * for what this indexing scheme is for. Deliberately NOT based on opt.lpControls's
+ * own array storage order, which is confirmed live to vary between otherwise-
+ * identical recompiles depending on which controls happen to be referenced by name
+ * in code -- dwIndex's low word is what stays stable. Returns nullptr if no placed
+ * control has that position.
+ */
+ControlInfo * FindPlacedControlByAccessorIndex(ObjectInfoWithOptional *pOwnerDescriptor, int accessorIndex);
+
+/**
+ * Counts the REAL placed controls in pOwnerDescriptor->opt.lpControls (dwControlCount
+ * minus the Form's own self entry) -- how many accessor slots __vbaNew needs to
+ * reserve for a Form-derived class (see ObjectManipulation.cpp).
+ */
+DWORD CountPlacedControls(ObjectInfoWithOptional *pOwnerDescriptor);
+
+/**
+ * Returns the ControlInfo entry for the placed control named pszControlName within
+ * pOwnerDescriptor's opt.lpControls array (case-sensitive exact match against
+ * ControlInfo.lpszName), or nullptr if not found.
+ */
+ControlInfo * FindControlInfoByName(ObjectInfoWithOptional *pOwnerDescriptor, const char *pszControlName);
+
+/**
+ * Reads the fixed-position event thunk for eventOrdinal (0-based, per that control/
+ * Form type's own real "XxxEvents" interface declaration order -- e.g. real
+ * FormEvents' Load=6th member so ordinal 6, QueryUnload=10th member so ordinal 9;
+ * real CommandButtonEvents' Click is its 1st member so ordinal 0) out of a control's
+ * compiled lpEventTable -- see ControlInfo's own doc comment (vba_structures.h) for
+ * the confirmed table shape. Returns nullptr if lpEventTable doesn't look like a
+ * genuine one (verified the same way IsRealEventSinkBlock verifies a WithEvents
+ * sink: slots 3-5 must be the real EVENT_SINK_QueryInterface/AddRef/Release exports)
+ * or if that particular event isn't implemented (a null slot). Unlike
+ * GetHandlerThunk's per-dispId thunks, the returned pointer -- when non-null -- is
+ * already the thunk's own start address, ready to pass straight to
+ * InvokeHandlerThunk with no further adjustment.
+ */
+void * GetFixedEventThunk(LPVOID lpEventTable, int eventOrdinal);
+
+/**
  * Parses a handler thunk's leading "sub dword ptr [esp+4], imm" instruction (either
  * the imm8 or imm32 encoding -- both observed across different classes/methods in
  * this session) and returns the immediate value.
  */
 int ReadThunkAdjustment(void *pThunk);
-
-/**
- * Resolves a handler thunk's own "jmp Handler" target address (skipping past its
- * leading "sub esp+4,imm" instruction first) -- i.e. the real compiled Sub's entry
- * point, e.g. "Form1::Form_QueryUnload". Returns nullptr if pThunk doesn't look like
- * the recognized thunk shape.
- */
-void * ResolveHandlerThunkTarget(void *pThunk);
-
-/**
- * Best-effort stdcall argument-byte-count classifier for a resolved handler target
- * (see ResolveHandlerThunkTarget) -- used to tell which intrinsic event a
- * declaration-order-packed thunk is when a class implements more than one (no
- * compiled name/ordinal table exists for this -- see EventDispatch.cpp). Returns -1
- * if no recognizable epilogue is found.
- */
-int GetStdcallArgBytes(void *pFuncStart);
 
 /**
  * Computes (pOwnerMe + ReadThunkAdjustment(pThunk)) and calls pThunk with that as the
@@ -149,7 +185,7 @@ void InvokeHandlerThunk(
 );
 
 /**
- * Tracks the "Me" of whichever vbClassWrapper-driven method (Class_Initialize/
+ * Tracks the "Me" of whichever vbObjectWrapper-driven method (Class_Initialize/
  * Class_Terminate) is currently executing on this thread, so a WithEvents Advise
  * happening inside one of those can capture the owning instance for later handler
  * invocation. Known limitation: a WithEvents assignment made from an arbitrary other

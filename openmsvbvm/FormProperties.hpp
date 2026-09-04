@@ -120,6 +120,19 @@ struct FormTemplateProps
 	LONG	clientTop;    // twips; LONG_MIN sentinel = "not set, let Windows place it"
 	LONG	clientWidth;  // twips; always a concrete value (defaulted if not found)
 	LONG	clientHeight; // twips; always a concrete value (defaulted if not found)
+
+	// Not a real _Form property -- where THIS form's own compiled property blob
+	// ends (right past its ClientRect tag if one was found, otherwise right past
+	// its Caption) and its placed-Controls section begins. ParseControlTemplate
+	// needs to scan from here, not from the Form's raw PublicObjectDescriptor
+	// address: two different forms can each have their own same-named control
+	// (e.g. both having their own "Command1"), and a scan anchored on the class
+	// descriptor alone has no way to tell which form a same-named match actually
+	// belongs to -- confirmed live to actually pick the WRONG form's control
+	// otherwise (Form2's own "Command1" rendered at Form1's Command1's
+	// Left/Top/Width/Height). nullptr if the class name signature itself wasn't
+	// found at all (ParseFormTemplate returned false).
+	void	*pControlsAnchor;
 };
 
 /**

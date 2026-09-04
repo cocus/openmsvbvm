@@ -1,92 +1,91 @@
 #include "vba_internal.h"
+#include "Logging.hpp"
 #include "Exceptions.hpp"
 #include "ObjectManipulation.hpp"
 
 // MIDL-generated header for this object
 #include "VBGlobal.h"
 
-extern ULONG g_Components;		/* from DllObjectInterface.cpp */
+extern ULONG g_Components; /* from DllObjectInterface.cpp */
 
 class VBGlobalImpl : public VBGlobal
 {
-	LONG refCount = 1;
+    LONG refCount = 1;
 
 public:
-	// IUnknown
-	HRESULT STDMETHODCALLTYPE QueryInterface(
-		REFIID riid,
-		void** ppvObject) override
-	{
-		if (!ppvObject) return E_POINTER;
-		*ppvObject = nullptr;
+    // IUnknown
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+    {
+        if (!ppvObject)
+            return E_POINTER;
+        *ppvObject = nullptr;
 
-		if (riid == IID_IUnknown || riid == IID_VBGlobal)
-		{
-			*ppvObject = static_cast<VBGlobal*>(this);
-			AddRef();
-			return S_OK;
-		}
+        if (riid == IID_IUnknown || riid == IID_VBGlobal)
+        {
+            *ppvObject = static_cast<VBGlobal*>(this);
+            AddRef();
+            return S_OK;
+        }
 
-		return E_NOINTERFACE;
-	}
+        return E_NOINTERFACE;
+    }
 
-	ULONG STDMETHODCALLTYPE AddRef() override
-	{
-		InterlockedIncrement(&g_Components);
-		return InterlockedIncrement(&refCount);
-	}
+    ULONG STDMETHODCALLTYPE AddRef() override
+    {
+        InterlockedIncrement(&g_Components);
+        return InterlockedIncrement(&refCount);
+    }
 
-	ULONG STDMETHODCALLTYPE Release() override
-	{
-		ULONG r = InterlockedDecrement(&refCount);
-		InterlockedDecrement(&g_Components);
-		if (r == 0)
-		{
-			delete this;
-		}
-		return r;
-	}
+    ULONG STDMETHODCALLTYPE Release() override
+    {
+        ULONG r = InterlockedDecrement(&refCount);
+        InterlockedDecrement(&g_Components);
+        if (r == 0)
+        {
+            delete this;
+        }
+        return r;
+    }
 
-	/* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE Load(
-		/* [in] */ IDispatch* object)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    /* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE Load(
+        /* [in] */ IDispatch* object)
+    {
 
-		DEBUG_WIDE_OBJ("object %.8x", (unsigned int)object);
+        LOG_OBJ(LOG_TRACE, this) << L"object = " << vbl::Hex(object);
 
-		return VBFormLoad(object); // TODO: Form or Control
-	}
+        return VBFormLoad(object); // TODO: Form or Control
+    }
 
-	/* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE Unload(
-		/* [in] */ IDispatch* object)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    /* [helpcontext][helpstring] */ HRESULT STDMETHODCALLTYPE Unload(
+        /* [in] */ IDispatch* object)
+    {
 
-		DEBUG_WIDE_OBJ("object %.8x", (unsigned int)object);
+        LOG_OBJ(LOG_TRACE, this) << L"object = " << vbl::Hex(object);
 
-		return VBFormUnload(object); // TODO: Form or Control
-	}
+        return VBFormUnload(object); // TODO: Form or Control
+    }
 
-	/* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_App(
-		/* [retval][out] */ _App** pdispRetVal)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    /* [helpcontext][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_App(
+        /* [retval][out] */ _App** pdispRetVal)
+    {
 
-		DEBUG_WIDE_OBJ("pdispRetVal %.8x", (unsigned int)pdispRetVal);
+        LOG_OBJ(LOG_TRACE, this) << L"pdispRetVal = " << vbl::Hex(pdispRetVal);
 
-		extern HRESULT Create_App_Instance(IUnknown **ppApp);
+        extern HRESULT Create_App_Instance(IUnknown * *ppApp);
 
-		HRESULT hr = Create_App_Instance(reinterpret_cast<IUnknown**>(pdispRetVal));
+        HRESULT hr = Create_App_Instance(reinterpret_cast<IUnknown**>(pdispRetVal));
 
-		return hr;
-	}
+        return hr;
+    }
 };
 
 HRESULT Create_VBGlobal_Instance(IUnknown** ppApp)
 {
-	if (!ppApp) return E_POINTER;
-	*ppApp = new VBGlobalImpl();
-	if (!*ppApp) return E_OUTOFMEMORY;
-	(*ppApp)->AddRef();
-	return S_OK;
+    if (!ppApp)
+        return E_POINTER;
+    *ppApp = new VBGlobalImpl();
+    if (!*ppApp)
+        return E_OUTOFMEMORY;
+    (*ppApp)->AddRef();
+    return S_OK;
 }

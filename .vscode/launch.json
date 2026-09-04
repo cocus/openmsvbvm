@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug openmsvbvm (VB6 test app)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "preLaunchTask": "Build (Debug|Win32)",
+      "program": "${workspaceFolder}/Debug/Proyecto1.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/Debug",
+      "environment": [],
+      "console": "externalTerminal"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// This is the CoClass definition for the Label object
+[
+	uuid(33AD4ED8-6699-11CF-B70C-00AA0060D393),
+	helpstring("Represents a Label control"),
+]
+coclass Label {
+	[default] interface _Label;
+};
+
+/*
+ * This is the Interface definition for the _Label object.
+ *
+ * A small subset of the real _Label interface (33ad4ed9-6699-11cf-b70c-00aa0060d393,
+ * 106 members total, dumped from C:\...\VB98\VB6.OLB the same way Form.idl's slot map
+ * was -- see that file's header comment for the technique). Only what's needed for
+ * real Caption support is declared for real here; everything else is padded with
+ * MissingNN placeholders purely to keep Caption's own slot correct -- extend this the
+ * same way Form.idl would be extended, using the same VB6.OLB dump, if more of
+ * _Label's surface is needed later.
+ *
+ * Confirmed live (real oVft/2/4 = slot, same doubled-unit convention Form.idl's
+ * derivation used): Name=slot 18 (matches _Form's own Name slot exactly), Caption
+ * get/put=slots 20/21 (ALSO exactly matching _Form's own Caption slots -- both
+ * interfaces share this early layout because both ultimately derive from the same
+ * real msvbvm60 CTL base -- see project_openmsvbvm_real_class_hierarchy memory).
+ * _Label's own "_Default" member is Caption under another name (identical oVft to
+ * Caption's own) -- a DISPID alias, not a separate vtable slot, so it's deliberately
+ * not declared here.
+ */
+[
+	uuid(33AD4ED9-6699-11CF-B70C-00AA0060D393),
+	helpstring("Represents a Label control"),
+	hidden,
+	nonextensible
+]
+interface _Label : IDispatch
+{
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing1(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing2(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing3(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing4(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing5(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing6(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing7(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing8(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing9(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing10(void);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing11(void);
+
+	[propget, helpstring("Returns the name used in code to identify an object.")]
+		HRESULT _stdcall Name([out, retval] BSTR* rhs);
+	[helpstring("Unknown exported method")] HRESULT _stdcall Missing12(void);
+
+	[propget, helpstring("Returns/sets the text displayed in an object.")]
+		HRESULT _stdcall Caption([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the text displayed in an object.")]
+		HRESULT _stdcall Caption([in] BSTR rhs);
+};

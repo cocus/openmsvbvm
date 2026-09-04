@@ -212,12 +212,16 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
     <ClCompile Include="InputBox.cpp" />
     <ClCompile Include="VBAInteractionFunctions.cpp" />
     <ClCompile Include="Locale.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="MessageBox.cpp" />
     <ClCompile Include="ObjectManipulation.cpp" />
     <ClCompile Include="EventDispatch.cpp" />
     <ClCompile Include="FormWindow.cpp" />
     <ClCompile Include="FormProperties.cpp" />
     <ClCompile Include="FormWrapper.cpp" />
+    <ClCompile Include="ControlProperties.cpp" />
+    <ClCompile Include="ControlWindow.cpp" />
+    <ClCompile Include="ControlObject.cpp" />
     <ClCompile Include="VBASettings.cpp" />
     <ClCompile Include="StringComparation.cpp" />
     <ClCompile Include="StringConversion.cpp" />
@@ -242,11 +246,17 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
     <ClInclude Include="vba_internal.h" />
     <ClInclude Include="vba_internal_coordinates.h" />
     <ClInclude Include="vba_Locale.h" />
+    <ClInclude Include="Logging.hpp" />
     <ClInclude Include="ObjectManipulation.hpp" />
     <ClInclude Include="EventDispatch.hpp" />
     <ClInclude Include="FormWindow.hpp" />
     <ClInclude Include="FormProperties.hpp" />
+    <ClInclude Include="ControlProperties.hpp" />
+    <ClInclude Include="ControlWindow.hpp" />
+    <ClInclude Include="ControlObject.hpp" />
+    <ClInclude Include="ObjectWrapper.hpp" />
     <ClInclude Include="ClassWrapper.hpp" />
+    <ClInclude Include="ControlWrapper.hpp" />
     <ClInclude Include="FormWrapper.hpp" />
     <ClInclude Include="StringManipulation.hpp" />
     <ClInclude Include="vba_structures.h" />
@@ -260,6 +270,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
     <Midl Include="App.idl" />
     <Midl Include="VBGlobal.idl" />
     <Midl Include="Form.idl" />
+    <Midl Include="Label.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{c,cpp,cxx,cc,h,hpp,hxx,h++,ipp,inl}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 130
+
+[*.{yml,yaml,json,jsonc}]
+indent_style = space
+indent_size = 4
+
+[{*.csproj,*.vcxproj,*.props,*.targets,*.sln,*.filters,*.user}]
+indent_style = space
+indent_size = 2
+
+[*.{md,markdown}]
+trim_trailing_whitespace = false
+
+[*.{vb,cls,frm,bas}]
+charset = utf-8
+end_of_line = crlf

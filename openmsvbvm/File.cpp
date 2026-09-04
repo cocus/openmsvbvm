@@ -1,4 +1,5 @@
 #include "vba_internal.h"
+#include "Logging.hpp"
 #include "Exceptions.hpp"
 
 #include <cstring>
@@ -13,259 +14,181 @@
 class vbaFileAbstraction
 {
 public:
-	vbaFileAbstraction(
-		std::wstring file,
-		vbaFileOpenMode mode
-	) : file(file), mode(mode)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    vbaFileAbstraction(std::wstring file, vbaFileOpenMode mode) : file(file), mode(mode)
+    {
 
-		DEBUG_WIDE_OBJ(
-			"mode = %.8x",
-			(unsigned int)mode
-		);
+        LOG_OBJ(LOG_DEBUG, this) << L"mode = " << vbl::Hex((unsigned long)mode);
 
-		errno_t err = EINVAL;
-		if (mode & VB_FMODE_ACCESS_WRITE)
-		{
-			err = _wfopen_s(&sysHandle, file.c_str(), L"wb+");
-		}
-		else if (mode & VB_FMODE_OUTPUT)
-		{
-			err = _wfopen_s(&sysHandle, file.c_str(), L"wb");
-		}
-		else //if (mode & VB_FMODE_ACCESS_READ) // TODO!!!
-		{
-			err = _wfopen_s(&sysHandle, file.c_str(), L"rb+");
-		}
+        errno_t err = EINVAL;
+        if (mode & VB_FMODE_ACCESS_WRITE)
+        {
+            err = _wfopen_s(&sysHandle, file.c_str(), L"wb+");
+        }
+        else if (mode & VB_FMODE_OUTPUT)
+        {
+            err = _wfopen_s(&sysHandle, file.c_str(), L"wb");
+        }
+        else // if (mode & VB_FMODE_ACCESS_READ) // TODO!!!
+        {
+            err = _wfopen_s(&sysHandle, file.c_str(), L"rb+");
+        }
 
-		if (err != 0)
-		{
-			DEBUG_WIDE_OBJ(
-				"_wfopen_s failed, err = %.8x",
-				(unsigned int)err
-			);
-			if (GetLastError() == ERROR_SHARING_VIOLATION)
-			{
-				vbaRaiseException(VBA_EXCEPTION_PERMISSION_DENIED);
-			}
-			else
-			{
-				vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-			}
-			sysHandle = nullptr;
-			return;
-		}
-	}
+        if (err != 0)
+        {
+            LOG_OBJ(LOG_DEBUG, this) << L"_wfopen_s failed, err = " << vbl::Hex((unsigned long)err);
+            if (GetLastError() == ERROR_SHARING_VIOLATION)
+            {
+                vbaRaiseException(VBA_EXCEPTION_PERMISSION_DENIED);
+            }
+            else
+            {
+                vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+            }
+            sysHandle = nullptr;
+            return;
+        }
+    }
 
-	void get3(
-		unsigned int	uiSize,
-		char			*pData
-	)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    void get3(unsigned int uiSize, char* pData)
+    {
 
-		DEBUG_WIDE_OBJ(
-			"uiSize %.8x, pData %.8x",
-			(unsigned int)uiSize,
-			(unsigned int)pData
-		);
+        LOG_OBJ(LOG_DEBUG, this) << L"uiSize " << vbl::Hex((unsigned long)uiSize) << L", pData " << vbl::Hex((unsigned long)pData);
 
-		/* This should not happen, but... */
-		if (pData == nullptr)
-		{
-			return;
-		}
+        /* This should not happen, but... */
+        if (pData == nullptr)
+        {
+            return;
+        }
 
-		/* TODO: check: If the size is null, then we have a pointer to a string */
-		if (uiSize == 0)
-		{
-			DEBUG_WIDE_OBJ(
-				"uiSize == 0!"
-			);
+        /* TODO: check: If the size is null, then we have a pointer to a string */
+        if (uiSize == 0)
+        {
+            LOG_OBJ(LOG_DEBUG, this) << L"uiSize == 0!";
 
-			return;
-		}
+            return;
+        }
 
-		size_t ret = fread(pData, 1, uiSize, sysHandle);
+        size_t ret = fread(pData, 1, uiSize, sysHandle);
 
-		DEBUG_WIDE_OBJ(
-			"fread wrote %.8x bytes, and we aimed for %.8x bytes",
-			(unsigned int)ret,
-			(unsigned int)uiSize
-		);
-	} /* get3 */
+        LOG_OBJ(LOG_DEBUG, this) << L"fread wrote " << vbl::Hex((unsigned long)ret) << L" bytes, and we aimed for "
+                                 << vbl::Hex((unsigned long)uiSize) << L" bytes";
+    } /* get3 */
 
-	void put3(
-		unsigned int	uiSize,
-		char			*pData
-	)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+    void put3(unsigned int uiSize, char* pData)
+    {
 
-		DEBUG_WIDE_OBJ(
-			"uiSize %.8x, pData %.8x",
-			(unsigned int)uiSize,
-			(unsigned int)pData
-		);
+        LOG_OBJ(LOG_DEBUG, this) << L"uiSize " << vbl::Hex((unsigned long)uiSize) << L", pData " << vbl::Hex((unsigned long)pData);
 
-		/* This should not happen, but... */
-		if (pData == nullptr)
-		{
-			return;
-		}
+        /* This should not happen, but... */
+        if (pData == nullptr)
+        {
+            return;
+        }
 
-		/* TODO: check: If the size is null, then we have a pointer to a string */
-		if (uiSize == 0)
-		{
-			/* Get the true BSTR from the specified pointer */
-			pData = (char*)(*(BSTR*)pData);
+        /* TODO: check: If the size is null, then we have a pointer to a string */
+        if (uiSize == 0)
+        {
+            /* Get the true BSTR from the specified pointer */
+            pData = (char*)(*(BSTR*)pData);
 
-			if (pData == nullptr)
-			{
-				DEBUG_WIDE_OBJ(
-					"pData = NULL, after de-referencing the original pointer"
-				);
-				return;
-			}
+            if (pData == nullptr)
+            {
+                LOG_OBJ(LOG_DEBUG, this) << L"pData = NULL, after de-referencing the original pointer";
+                return;
+            }
 
-			/* Get the size of the string */
-			uiSize = SysStringLen((BSTR)pData);
-			if (uiSize == 0)
-			{
-				DEBUG_WIDE_OBJ(
-					"wcslen = 0, could not get the size of the buffer to write"
-				);
-				return;
-			}
-		}
+            /* Get the size of the string */
+            uiSize = SysStringLen((BSTR)pData);
+            if (uiSize == 0)
+            {
+                LOG_OBJ(LOG_DEBUG, this) << L"wcslen = 0, could not get the size of the buffer to write";
+                return;
+            }
+        }
 
-		size_t ret = fwrite(pData, 1, uiSize, sysHandle);
+        size_t ret = fwrite(pData, 1, uiSize, sysHandle);
 
-		DEBUG_WIDE_OBJ(
-			"fwrite wrote %.8x bytes, and we aimed for %.8x bytes",
-			(unsigned int)ret,
-			(unsigned int)uiSize
-		);
-	} /* put3 */
+        LOG_OBJ(LOG_DEBUG, this) << L"fwrite wrote " << vbl::Hex((unsigned long)ret) << L" bytes, and we aimed for "
+                                 << vbl::Hex((unsigned long)uiSize) << L" bytes";
+    } /* put3 */
 
+    void print(const BSTR pData)
+    {
 
-	void print(
-		const BSTR		pData
-	)
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+        LOG_OBJ(LOG_DEBUG, this) << L"pData " << vbl::Hex((unsigned long)pData);
 
-		DEBUG_WIDE_OBJ(
-			"pData %.8x",
-			(unsigned int)pData
-		);
+        /* This should not happen, but... */
+        if (pData == nullptr)
+        {
+            return;
+        }
 
-		/* This should not happen, but... */
-		if (pData == nullptr)
-		{
-			return;
-		}
+        UINT uiSize = SysStringLen(pData);
 
-		UINT uiSize = SysStringLen(pData);
+        /* Get the size of the string */
+        if (uiSize == 0)
+        {
+            LOG_OBJ(LOG_DEBUG, this) << L"wcslen = 0, could not get the size of the buffer to write";
+            return;
+        }
 
-		/* Get the size of the string */
-		if (uiSize == 0)
-		{
-			DEBUG_WIDE_OBJ(
-				"wcslen = 0, could not get the size of the buffer to write"
-			);
-			return;
-		}
+        /* Get how many bytes we'll need to allocate */
+        int size_needed = WideCharToMultiByte(CP_ACP, 0, (LPCWCH)pData, uiSize, NULL, 0, 0, 0);
 
-		/* Get how many bytes we'll need to allocate */
-		int size_needed = WideCharToMultiByte(
-			CP_ACP,
-			0,
-			(LPCWCH)pData,
-			uiSize,
-			NULL,
-			0,
-			0,
-			0
-		);
+        char* buffer = new char[size_needed + 1];
 
-		char* buffer = new char[size_needed+1];
+        if (!buffer)
+        {
+            vbaRaiseException(VBA_EXCEPTION_OUT_OF_MEMORY);
+            return;
+        }
 
-		if (!buffer)
-		{
-			vbaRaiseException(VBA_EXCEPTION_OUT_OF_MEMORY);
-			return;
-		}
+        int iChars = WideCharToMultiByte(CP_ACP, 0, (LPCWCH)pData, uiSize + 1, buffer, size_needed + 1, 0, 0);
 
-		int iChars = WideCharToMultiByte(
-			CP_ACP,
-			0,
-			(LPCWCH)pData,
-			uiSize+1,
-			buffer,
-			size_needed + 1,
-			0,
-			0
-		);
+        size_t ret = fwrite(buffer, 1, uiSize, sysHandle);
+        fwrite("\r\n", 1, 2, sysHandle); // add the CR+LF
 
-		size_t ret = fwrite(buffer, 1, uiSize, sysHandle);
-		fwrite("\r\n", 1, 2, sysHandle); // add the CR+LF
+        delete[] buffer;
 
-		delete[] buffer;
+        LOG_OBJ(LOG_DEBUG, this) << L"fwrite wrote " << vbl::Hex((unsigned long)ret) << L" bytes, and we aimed for "
+                                 << vbl::Hex((unsigned long)uiSize) << L" bytes";
+    } /* put3 */
 
-		DEBUG_WIDE_OBJ(
-			"fwrite wrote %.8x bytes, and we aimed for %.8x bytes",
-			(unsigned int)ret,
-			(unsigned int)uiSize
-		);
-	} /* put3 */
+    unsigned long rtcFileLength()
+    {
 
-	unsigned long rtcFileLength()
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+        unsigned long ulOriginalPos = ftell(sysHandle);
 
-		unsigned long ulOriginalPos = ftell(sysHandle);
+        fseek(sysHandle, 0, SEEK_END);
 
-		fseek(sysHandle, 0, SEEK_END);
+        unsigned long ulSize = ftell(sysHandle);
 
-		unsigned long ulSize = ftell(sysHandle);
+        fseek(sysHandle, ulOriginalPos, SEEK_SET);
 
-		fseek(sysHandle, ulOriginalPos, SEEK_SET);
+        LOG_OBJ(LOG_DEBUG, this) << L"ulOriginalPos " << vbl::Hex((unsigned long)ulOriginalPos) << L", ulSize "
+                                 << vbl::Hex((unsigned long)ulSize);
 
-		DEBUG_WIDE_OBJ(
-			"ulOriginalPos %.8x, ulSize %.8x",
-			ulOriginalPos,
-			ulSize
-		);
+        return ulSize;
 
-		return ulSize;
+    } /* rtcFileLength */
 
-	} /* rtcFileLength */
+    ~vbaFileAbstraction()
+    {
 
-	~vbaFileAbstraction()
-	{
-		DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
+        LOG_OBJ(LOG_DEBUG, this) << L"this->sysHandle " << vbl::Hex((unsigned long)sysHandle) << L", file '" << file.c_str() << L"'";
 
-		DEBUG_WIDE_OBJ(
-			"this->sysHandle %.8x, file '%ls'",
-			(unsigned int)sysHandle,
-			file.c_str()
-		);
-
-		if (sysHandle)
-		{
-			fclose(sysHandle);
-			sysHandle = NULL;
-		}
-	}
+        if (sysHandle)
+        {
+            fclose(sysHandle);
+            sysHandle = NULL;
+        }
+    }
 
 private:
-	FILE * sysHandle = nullptr;
-	std::wstring file = L"";
-	vbaFileOpenMode mode;
+    FILE* sysHandle = nullptr;
+    std::wstring file = L"";
+    vbaFileOpenMode mode;
 }; /* class vbaFileAbstraction */
-
 
 /* TODO: This should be thread-dependant, and maybe add locks? */
 static std::map<unsigned int, vbaFileAbstraction*> _vbaFileHandles;
@@ -275,23 +198,20 @@ static std::map<unsigned int, vbaFileAbstraction*> _vbaFileHandles;
  * @param			TBD
  * @returns			TBD
  */
-static bool vbaFileGetObjectFromVBHandle(
-	unsigned int			uiVBHandle,
-	vbaFileAbstraction**	obj
-)
+static bool vbaFileGetObjectFromVBHandle(unsigned int uiVBHandle, vbaFileAbstraction** obj)
 {
-	std::map<unsigned int, vbaFileAbstraction*>::iterator it;
+    std::map<unsigned int, vbaFileAbstraction*>::iterator it;
 
-	it = _vbaFileHandles.find(uiVBHandle);
+    it = _vbaFileHandles.find(uiVBHandle);
 
-	if (it != _vbaFileHandles.end())
-	{
-		*obj = it->second;
+    if (it != _vbaFileHandles.end())
+    {
+        *obj = it->second;
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
+    return false;
 } /* vbaFileGetObjectFromVBHandle */
 
 /**
@@ -302,67 +222,47 @@ static bool vbaFileGetObjectFromVBHandle(
  * @param			bstrFileName	File path.
  * @returns			The length of the file path argument (minus one) on success.
  */
-EXPORT unsigned int __stdcall __vbaFileOpen(
-	unsigned int	uiMode,
-	int				unknown,
-	unsigned int	uiVBHandle,
-	BSTR			bstrFileName
-)
+EXPORT unsigned int __stdcall __vbaFileOpen(unsigned int uiMode, int unknown, unsigned int uiVBHandle, BSTR bstrFileName)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"uiMode %.8x, unknown %.8x, uiVBHandle %.8x, file = '%ls'",
-		uiMode,
-		unknown,
-		uiVBHandle,
-		bstrFileName
-	);
+    LOG(LOG_DEBUG) << L"uiMode " << vbl::Hex((unsigned long)uiMode) << L", unknown " << vbl::Hex((unsigned long)unknown)
+                   << L", uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle) << L", file = '" << vbl::Bstr(bstrFileName) << L"'";
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		vbaRaiseException(VBA_EXCEPTION_FILE_ALREADY_OPEN);
-	}
-	else
-	{
-		/* TODO: create a factory for this! */
-		obj = new vbaFileAbstraction(std::wstring(bstrFileName), (vbaFileOpenMode)uiMode);
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        vbaRaiseException(VBA_EXCEPTION_FILE_ALREADY_OPEN);
+    }
+    else
+    {
+        /* TODO: create a factory for this! */
+        obj = new vbaFileAbstraction(std::wstring(bstrFileName), (vbaFileOpenMode)uiMode);
 
-		_vbaFileHandles.insert(std::pair<unsigned int, vbaFileAbstraction*>(
-			uiVBHandle,
-			obj
-		));
-	}
+        _vbaFileHandles.insert(std::pair<unsigned int, vbaFileAbstraction*>(uiVBHandle, obj));
+    }
 
-	return wcslen(bstrFileName) + 1;
+    return wcslen(bstrFileName) + 1;
 } /* __vbaFileOpen */
 
 /**
  * @brief			Closes a previously open VB file.
  * @param			uiVBHandle		VB file handle identifier for this file.
  */
-EXPORT void __stdcall __vbaFileClose(
-	int vbHandle
-)
+EXPORT void __stdcall __vbaFileClose(int vbHandle)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"vbHandle = %.8x",
-		(unsigned int)vbHandle
-	);
+    LOG(LOG_DEBUG) << L"vbHandle = " << vbl::Hex((unsigned long)vbHandle);
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(vbHandle, &obj))
-	{
-		_vbaFileHandles.erase(vbHandle);
-		delete obj;
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-	}
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(vbHandle, &obj))
+    {
+        _vbaFileHandles.erase(vbHandle);
+        delete obj;
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+    }
 } /* __vbaFileClose */
 
 /**
@@ -370,27 +270,21 @@ EXPORT void __stdcall __vbaFileClose(
  * @param			uiVBHandle		VB file handle identifier for this file.
  * @returns			The file size on success, 0 otherwise.
  */
-EXPORT unsigned long __stdcall rtcFileLength(
-	unsigned int	uiVBHandle
-)
+EXPORT unsigned long __stdcall rtcFileLength(unsigned int uiVBHandle)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"uiVBHandle %.8x",
-		(unsigned int)uiVBHandle
-	);
+    LOG(LOG_DEBUG) << L"uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle);
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		return obj->rtcFileLength();
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-		return 0;
-	}
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        return obj->rtcFileLength();
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+        return 0;
+    }
 } /* rtcFileLength */
 
 /**
@@ -399,35 +293,27 @@ EXPORT unsigned long __stdcall rtcFileLength(
  * @param			uiVBHandle		VB file handle identifier for this file.
  * @returns			The previous file position on success, 0 otherwise.
  */
-EXPORT unsigned long __stdcall __vbaFileSeek(
-	unsigned long	ulPos,
-	unsigned int	uiVBHandle
-)
+EXPORT unsigned long __stdcall __vbaFileSeek(unsigned long ulPos, unsigned int uiVBHandle)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"ulPos %.8x, uiVBHandle %.8x",
-		ulPos,
-		(unsigned int)uiVBHandle
-	);
+    LOG(LOG_DEBUG) << L"ulPos " << vbl::Hex((unsigned long)ulPos) << L", uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle);
 
-	if (ulPos < 1)
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_RECORD_NUMBER);
-		return 0;
-	}
+    if (ulPos < 1)
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_RECORD_NUMBER);
+        return 0;
+    }
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		//return obj->rtcFileLength();
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-	}
-	return 0;
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        // return obj->rtcFileLength();
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+    }
+    return 0;
 
 } /* __vbaFileSeek */
 
@@ -437,30 +323,21 @@ EXPORT unsigned long __stdcall __vbaFileSeek(
  * @param			*pData			Pointer to the destination data buffer.
  * @param			uiVBHandle		VB file handle identifier for this file.
  */
-EXPORT void __stdcall __vbaGet3(
-	unsigned int	uiSize,
-	char			*pData,
-	unsigned int	uiVBHandle
-)
+EXPORT void __stdcall __vbaGet3(unsigned int uiSize, char* pData, unsigned int uiVBHandle)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"uiSize %.8x, pData %.8x, uiVBHandle %.8x",
-		(unsigned int)uiSize,
-		(unsigned int)pData,
-		(unsigned int)uiVBHandle
-	);
+    LOG(LOG_DEBUG) << L"uiSize " << vbl::Hex((unsigned long)uiSize) << L", pData " << vbl::Hex((unsigned long)pData)
+                   << L", uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle);
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		obj->get3(uiSize, pData);
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-	}
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        obj->get3(uiSize, pData);
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+    }
 } /* __vbaGet3 */
 
 /**
@@ -469,55 +346,37 @@ EXPORT void __stdcall __vbaGet3(
  * @param			*pData			Pointer to the source data buffer.
  * @param			uiVBHandle		VB file handle identifier for this file.
  */
-EXPORT void __stdcall __vbaPut3(
-	unsigned int	uiSize,
-	char			*pData,
-	unsigned int	uiVBHandle
-)
+EXPORT void __stdcall __vbaPut3(unsigned int uiSize, char* pData, unsigned int uiVBHandle)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"uiSize %.8x, pData %.8x, uiVBHandle %.8x",
-		(unsigned int)uiSize,
-		(unsigned int)pData,
-		(unsigned int)uiVBHandle
-	);
+    LOG(LOG_DEBUG) << L"uiSize " << vbl::Hex((unsigned long)uiSize) << L", pData " << vbl::Hex((unsigned long)pData)
+                   << L", uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle);
 
-	vbaFileAbstraction * obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		obj->put3(uiSize, pData);
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-	}
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        obj->put3(uiSize, pData);
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+    }
 } /* __vbaPut3 */
 
-EXPORT int __vbaPrintFile(
-	LPVOID			descriptor,
-	unsigned int	uiVBHandle,
-	const BSTR		pData
-)
+EXPORT int __vbaPrintFile(LPVOID descriptor, unsigned int uiVBHandle, const BSTR pData)
 {
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();
 
-	DEBUG_WIDE(
-		"descriptor %.8x, pData %.8x, uiVBHandle %.8x",
-		(unsigned int)descriptor,
-		(unsigned int)pData,
-		(unsigned int)uiVBHandle
-	);
+    LOG(LOG_DEBUG) << L"descriptor " << vbl::Hex((unsigned long)descriptor) << L", pData " << vbl::Hex((unsigned long)pData)
+                   << L", uiVBHandle " << vbl::Hex((unsigned long)uiVBHandle);
 
-	vbaFileAbstraction* obj;
-	if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
-	{
-		obj->print(pData);
-	}
-	else
-	{
-		vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
-	}
-	return 0;
+    vbaFileAbstraction* obj;
+    if (vbaFileGetObjectFromVBHandle(uiVBHandle, &obj))
+    {
+        obj->print(pData);
+    }
+    else
+    {
+        vbaRaiseException(VBA_EXCEPTION_BAD_FILENAME_OR_NUMBER);
+    }
+    return 0;
 }

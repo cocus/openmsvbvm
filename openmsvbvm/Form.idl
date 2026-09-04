@@ -16,14 +16,11 @@ coclass Form {
  *
  * Unlike App.idl/VBGlobal.idl (hand-transcribed straight off real msvbvm60's own
  * _App/VBGlobal), this file's member list/order was reconstructed from a live dump of
- * the real _Form interface in C:\...\VB98\VB6.OLB (walked via ITypeLib/ITypeInfo --
- * IDAPython/WebFetch can't read a binary typelib) rather than from disassembly of
- * this project's own code. Every named member's vtable slot below was derived from
- * that dump's own oVft field (real byte offset = oVft/2, slot = that/4 -- confirmed
- * because Show's oVft=1376 -> 1376/2=688=0x2B0, exactly matching the offset this
- * project had already confirmed by disassembling a real compiled Form1.Show call
- * site). The whole point of expressing this as an actual MIDL-compiled interface
- * (rather than a hand-maintained "raw offset constant" like the old
+ * the real _Form interface in C:\...\VB98\VB6.OLB (walked via ITypeLib/ITypeInfo)
+ * rather than from disassembly of this project's own code. Every named member's
+ * vtable slot below was derived from that dump's own oVft field (real byte offset =
+ * oVft/2, slot = that/4). The whole point of expressing this as an actual MIDL-compiled
+ * interface (rather than a hand-maintained "raw offset constant" like the old
  * kFormShowVtableOffset) is that the *compiler* now derives every member's vtable
  * offset from this declaration order, the same way it would for the real object --
  * get this file's member order right once, and every offset falls out correctly,

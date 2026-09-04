@@ -1,4 +1,5 @@
 #include "vba_internal.h"
+#include "Logging.hpp"
 #include "Exceptions.hpp"
 #include "vba_structures.h"
 
@@ -8,34 +9,27 @@
  *									about the DLL and procedure to call.
  * @return			FARPROC (func pointer) of the specified procedure on success, 0 otherwise.
  */
-EXPORT FARPROC __stdcall DllFunctionCall(
-	struct serDllTemplate * dllTemplate
-)
+EXPORT FARPROC __stdcall DllFunctionCall(struct serDllTemplate* dllTemplate)
 {
-	FARPROC			hFuncAddr;
-	HMODULE			hModule;
+    FARPROC hFuncAddr;
+    HMODULE hModule;
 
-	if (!dllTemplate)
-	{
-		vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
-	}
+    if (!dllTemplate)
+    {
+        vbaRaiseException(VBA_EXCEPTION_INTERNAL_ERROR);
+    }
 
-	hModule = LoadLibraryA(
-		dllTemplate->lpLibraryNameA
-	);
-	if (!hModule)
-	{
-		RaiseExceptionIfLastErrorIsSet();
-	}
+    hModule = LoadLibraryA(dllTemplate->lpLibraryNameA);
+    if (!hModule)
+    {
+        RaiseExceptionIfLastErrorIsSet();
+    }
 
-	hFuncAddr = GetProcAddress(
-		hModule,
-		dllTemplate->lpProcAddressA
-	);
-	if (!hFuncAddr)
-	{
-		RaiseExceptionIfLastErrorIsSet();
-	}
+    hFuncAddr = GetProcAddress(hModule, dllTemplate->lpProcAddressA);
+    if (!hFuncAddr)
+    {
+        RaiseExceptionIfLastErrorIsSet();
+    }
 
-	return hFuncAddr;
+    return hFuncAddr;
 } /* DllFunctionCall */

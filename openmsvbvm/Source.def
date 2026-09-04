@@ -33,8 +33,17 @@ EXPORTS
 	_allmul						@728
 	__vbaFpI2					@124
 	__vbaUI1I2					@140
+	__vbaUI1I4					@141
 	_adj_fptan					@727
 	_adj_fpatan					@724
+
+	rtcSin						@582
+	rtcCos						@583
+	rtcTan						@584
+	rtcAtn						@585
+	rtcExp						@586
+	rtcLog						@587
+	rtcSqr						@614
 
 ; vba_InteractionFunctions.cpp
 	rtcChoose					@665
@@ -153,6 +162,7 @@ EXPORTS
 
 ; vba_strComparation.cpp
 	__vbaStrComp				@407
+	__vbaStrCmp					@406
 
 ; vba_strConversion.cpp
    __vbaStrR8					@423
@@ -175,9 +185,14 @@ EXPORTS
    __vbaFreeStrList				@244
    __vbaStrErrVarCopy			@111
    __vbaStrVarCopy				@429
+   __vbaStrVarVal				@438
+   __vbaStrVarMove				@437
    __vbaStrCopy					@138
    __vbaLsetFixstr				@333
    __vbaStrFixstr				@416
+   __vbaLenBstr					@327
+   rtcAnsiValueBstr				@516
+   rtcMidCharVar				@632
 
 ; DllObjectInterface.cpp
 	__vbaNew2					@340

@@ -12,6 +12,7 @@
 
 # Build results
 # Removed, so we can have a VB6 test project there [Dd]ebug/
+openmsvbvm/openmsvbvm/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/

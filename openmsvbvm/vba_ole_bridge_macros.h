@@ -1,8 +1,8 @@
-#pragma once
+﻿#pragma once
 
 
 
-#define DECLARE_VBA_CONVERSION_BRIDGE_TO_OLE_CONVERSION(outType, inType, exportedName, oleAPI, flg, debugInParams)	\
+#define DECLARE_VBA_CONVERSION_BRIDGE_TO_OLE_CONVERSION(outType, inType, exportedName, oleAPI, flg)	\
 EXPORT outType __stdcall exportedName(																				\
 	inType			unkVal																							\
 )																													\
@@ -10,9 +10,8 @@ EXPORT outType __stdcall exportedName(																				\
 	HRESULT		result;																								\
 	outType		unkLocalCopy;																						\
 																													\
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();																			\
 																													\
-	DEBUG_WIDE(debugInParams, unkVal);																				\
+	LOG(LOG_DEBUG) << L"in '" << unkVal << L"'";																				\
 																													\
 	result = oleAPI(																								\
 		unkVal,																										\
@@ -23,7 +22,7 @@ EXPORT outType __stdcall exportedName(																				\
 																													\
 	if (result < 0)																									\
 	{																												\
-		DEBUG_WIDE("result = %.8x", result);																		\
+		LOG(LOG_DEBUG) << L"result = " << vbl::Hex((unsigned long)result);																		\
 		vbaRaiseException(vbaErrorFromHRESULT(result));																\
 		return NULL;																								\
 	}																												\
@@ -40,14 +39,10 @@ EXPORT LPVARIANT __stdcall exportedName(													\
 {																							\
 	HRESULT		result;																		\
 																							\
-	DEBUG_DECLARE_WIDE_BUFFER_IF_NEEDED();													\
 																							\
-	DEBUG_WIDE(																				\
-		"pvarResult %.8x, pvarRight %.8x, pvarLeft %.8x",									\
-		(unsigned int)pvarResult,															\
-		(unsigned int)pvarRight,															\
-		(unsigned int)pvarLeft																\
-	);																						\
+	LOG(LOG_DEBUG) << L"pvarResult " << vbl::Hex((unsigned long)pvarResult)					\
+		<< L", pvarRight " << vbl::Hex((unsigned long)pvarRight)								\
+		<< L", pvarLeft " << vbl::Hex((unsigned long)pvarLeft);								\
 																							\
 	result = oleAPI(																		\
 		pvarLeft,																			\
@@ -57,7 +52,7 @@ EXPORT LPVARIANT __stdcall exportedName(													\
 																							\
 	if (result < 0)																			\
 	{																						\
-		DEBUG_WIDE("result = %.8x", result);												\
+		LOG(LOG_DEBUG) << L"result = " << vbl::Hex((unsigned long)result);												\
 		vbaRaiseException(vbaErrorFromHRESULT(result));										\
 		return NULL;																		\
 	}																						\

@@ -1,0 +1,20 @@
+---
+# Lint rules aligned with the Microsoft C++ Core Guidelines (cppcoreguidelines).
+# Consumed by the VS Code C/C++ extension ("C/C++: Run Code Analysis") and clang-tidy.
+Checks: >
+  -*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  clang-analyzer-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-vararg,
+  -readability-identifier-length,
+  -readability-static-accessed-through-instance
+WarningsAsErrors: ''
+HeaderFilterRegex: '^openmsvbvm/'
+FormatStyle: file

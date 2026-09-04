@@ -1,0 +1,41 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Debug|Win32",
+      "includePath": [
+        "${workspaceFolder}/openmsvbvm/**"
+      ],
+      "defines": [
+        "WIN32",
+        "_DEBUG",
+        "OPENMSVBVM_EXPORTS",
+        "_WINDOWS",
+        "_USRDLL"
+      ],
+      "windowsSdkVersion": "10.0.26100.0",
+      "compilerPath": "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx86/x86/cl.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-msvc-x86"
+    },
+    {
+      "name": "Release|Win32",
+      "includePath": [
+        "${workspaceFolder}/openmsvbvm/**"
+      ],
+      "defines": [
+        "WIN32",
+        "NDEBUG",
+        "OPENMSVBVM_EXPORTS",
+        "_WINDOWS",
+        "_USRDLL"
+      ],
+      "windowsSdkVersion": "10.0.26100.0",
+      "compilerPath": "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx86/x86/cl.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-msvc-x86"
+    }
+  ]
+}

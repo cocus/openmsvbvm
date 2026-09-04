@@ -1,22 +1,18 @@
+#include "Logging.hpp"
 #include "vba_Locale.h"
 
 LCID getUserLocale()
 {
-	LCID result;
+    LCID result;
 
-	DEBUG_DECLARE_ASCII_BUFFER_IF_NEEDED();
+    result = GetUserDefaultLCID();
 
-	result = GetUserDefaultLCID();
+    if (!result)
+    {
+        result = 0x0409; /* Default: United States */
+    }
 
-	if (!result)
-	{
-		result = 0x0409;	/* Default: United States */
-	}
+    LOG(LOG_DEBUG) << L"locale = " << vbl::Hex((unsigned long)result);
 
-	DEBUG_ASCII(
-		"locale = %.8x",
-		(unsigned int)result
-	);
-
-	return result;
+    return result;
 }
