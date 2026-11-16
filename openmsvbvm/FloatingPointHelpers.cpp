@@ -196,6 +196,55 @@ EXPORT __declspec(naked) void __vbaFpI2(void)
     }
 }
 
+/**
+ * @brief			round ST(0) to single precision.
+ */
+EXPORT __declspec(naked) void __vbaFpR4(void)
+{
+    _asm
+    {
+		sub esp, 4
+		fnstcw word ptr [esp]
+		mov ax, word ptr [esp]
+		and ax, 0FCFFh
+		mov word ptr [esp+2], ax
+		fnclex
+		fldcw word ptr [esp+2]
+		fld1
+		fmulp st(1), st
+		wait
+		fnstsw ax
+		fldcw word ptr [esp]
+		add esp, 4
+		retn
+    }
+}
+
+/**
+ * @brief			round ST(0) to double precision.
+ */
+EXPORT __declspec(naked) void __vbaFpR8(void)
+{
+    _asm
+    {
+		sub esp, 4
+		fnstcw word ptr [esp]
+		mov ax, word ptr [esp]
+		and ax, 0FCFFh
+		or ax, 0200h
+		mov word ptr [esp+2], ax
+		fnclex
+		fldcw word ptr [esp+2]
+		fld1
+		fmulp st(1), st
+		wait
+		fnstsw ax
+		fldcw word ptr [esp]
+		add esp, 4
+		retn
+    }
+}
+
 /*
  * Confirmed via real msvbvm60.dll disassembly: every _adj_fdiv_ and _adj_fdivr_
  * function below exists ONLY to work around the Pentium FDIV erratum (a hardware division bug

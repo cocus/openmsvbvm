@@ -90,6 +90,45 @@ EXPORT short __stdcall rtcAnsiValueBstr(BSTR bstrIn)
 } /* rtcAnsiValueBstr */
 
 /**
+ * @brief			Implements ChrW$(code): a one-character BSTR from a 16-bit code.
+ * @param			iCode			Character code, -32768..65535.
+ * @returns			Newly allocated BSTR.
+ */
+EXPORT BSTR __stdcall rtcBstrFromChar(int iCode)
+{
+    if (iCode > 0xFFFF || iCode < -0x8000)
+    {
+        vbaRaiseException(VBA_EXCEPTION_INVALID_PROCEDURE_CALL);
+        return nullptr;
+    }
+
+    OLECHAR wc = (OLECHAR)iCode;
+    BSTR bstrResult = SysAllocStringLen(&wc, 1);
+    if (!bstrResult)
+        vbaRaiseException(VBA_EXCEPTION_OUT_OF_STRING_SPACE);
+
+    return bstrResult;
+} /* rtcBstrFromChar */
+
+/**
+ * @brief			Implements ChrW(code) into a Variant result slot.
+ * @param			pvargResult		Destination Variant, receives the VT_BSTR result.
+ * @param			iCode			Character code, -32768..65535.
+ * @returns			pvargResult.
+ */
+EXPORT VARIANT* __stdcall rtcVarBstrFromChar(VARIANT* pvargResult, int iCode)
+{
+    BSTR bstrResult = rtcBstrFromChar(iCode);
+
+    VARIANT v;
+    memset(&v, 0, sizeof(v));
+    v.vt = VT_BSTR;
+    v.bstrVal = bstrResult;
+    memcpy(pvargResult, &v, sizeof(v));
+    return pvargResult;
+} /* rtcVarBstrFromChar */
+
+/**
  * @brief			Implements Mid$(string, start, [length]) into a Variant result slot.
  * @param			pvargResult		Destination Variant, receives the VT_BSTR result.
  * @param			pvargString		Source string Variant (BSTR or BYREF BSTR).

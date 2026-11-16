@@ -87,6 +87,7 @@ Most notable ones:
     * `___vbaCyMul` ✅
     * `__allmul	` ✅
     * `___vbaFpI2` ❌ (stub)
+    * `__vbaFpR4` ✅ / `__vbaFpR8` ✅ (round ST(0) to single / double precision; the real DLL's R8 control word wasn't decoded, so precision control is set explicitly instead)
     * `__vbaUI1I2` ✅
     * `_adj_fptan` ✅
     * `_adj_fpatan` ✅
@@ -115,16 +116,20 @@ Most notable ones:
     * `Set obj = Norhing` (`__vbaFreeObj`) ✅
     * Invocation of methods and properties of COM objects ✅
     * `GetActiveObject` with proper redirects for internal VB objects (VBGlobal, etc.) ✅
+* `Err` object (`rtcErrObj`) ⚠️ (`Number`, `Description`, `Source`, `HelpFile`, `HelpContext`, `LastDllError`, `Raise`, `Clear`; backed by the last-raised-error globals, so it isn't auto-cleared by `Resume`/`Exit Sub`/`On Error GoTo 0`)
 * Strings
+    * `ChrW$` / `ChrW` (`rtcBstrFromChar`, `rtcVarBstrFromChar`) ✅
 * Variants
 * Access to the VBA object's functions
     * `Activate` (`rtcAppActivate`) ✅
     * `Beep` (`rtcBeep`) ✅
     * `Choose` (`rtcChoose`) ✅
+    * `DoEvents` (`rtcDoEvents`) ⚠️ (almost a stub: just pumps pending window messages, always returns 0)
     * `Environ` (`rtcEnviron`) ✅
     * `Iif` (`rtcImmediateIf`) ✅
+    * `Timer` (`rtcGetTimer`) ✅
     * `Partition` (`rtcPartition`) ✅
-    * `SendKeys` (`rtcSendKeys`) ❌ (TODO: use [Karl E. Peterson's SendInput](http://www.classicvb.net/samples/SendInput/))
+    * `SendKeys` (`rtcSendKeys`) ✅ (SendInput-based, ported from [Kr00l's implementation](https://github.com/cocus/openmsvbvm/issues/6#issuecomment-6923532826); `Wait` is ignored. Compile-time switches: `OPENMSVBVM_SENDKEYS_UNICODE` (default 1; 0 = legacy byte-based) and `OPENMSVBVM_SENDKEYS_EXTENSIONS` (default 1; 0 = strict VBA syntax))
     * `Shell` (`rtcShell`) ✅
 * VB global object
     * `App` member object

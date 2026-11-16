@@ -200,6 +200,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App_i.c" />
+    <ClCompile Include="ErrObject_i.c" />
+    <ClCompile Include="ErrObject.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DllObjectInterface.cpp" />
     <ClCompile Include="FloatingPointHelpers.cpp" />
@@ -237,6 +239,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="ErrObject.h" />
     <ClInclude Include="DllObjectInterface.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="CommandLine.hpp" />
@@ -268,6 +271,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(TargetDir)msvbvm60.pdb"
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
+    <Midl Include="ErrObject.idl" />
     <Midl Include="VBGlobal.idl" />
     <Midl Include="Form.idl" />
     <Midl Include="Label.idl" />

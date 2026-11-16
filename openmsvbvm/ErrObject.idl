@@ -1,0 +1,66 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// This is the CoClass definition for the Err object
+[
+	uuid(A4C46654-499F-101B-BB78-00AA00383CBB),
+	helpstring("Contains information about run-time errors."),
+]
+coclass ErrObject {
+	[default] interface _ErrObject;
+};
+
+/*
+ * This is the Interface definition for the Err object (rtcErrObj, ordinal 685).
+ * Member order (and so the vtable layout) was read from the VBA type library inside the
+ * real msvbvm60.dll: IDispatch (slots 3..6), then Number get/put (7/8), Source get/put
+ * (9/10), Description get/put (11/12), HelpFile get/put (13/14), HelpContext get/put
+ * (15/16), Raise (17), Clear (18), LastDllError (19).
+ */
+[
+	uuid(A4C466B8-499F-101B-BB78-00AA00383CBB),
+	helpstring("Contains information about run-time errors."),
+	hidden,
+	nonextensible
+]
+interface _ErrObject : IDispatch
+{
+	[propget, helpstring("Returns/sets a numeric value specifying an error.")]
+		HRESULT _stdcall Number([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets a numeric value specifying an error.")]
+		HRESULT _stdcall Number([in] long rhs);
+
+	[propget, helpstring("Returns/sets the name of the object or application that originally generated the error.")]
+		HRESULT _stdcall Source([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets the name of the object or application that originally generated the error.")]
+		HRESULT _stdcall Source([in] BSTR rhs);
+
+	[propget, helpstring("Returns/sets a descriptive string associated with an error.")]
+		HRESULT _stdcall Description([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets a descriptive string associated with an error.")]
+		HRESULT _stdcall Description([in] BSTR rhs);
+
+	[propget, helpstring("Returns/sets a fully qualified path to a Help file.")]
+		HRESULT _stdcall HelpFile([out, retval] BSTR* rhs);
+	[propput, helpstring("Returns/sets a fully qualified path to a Help file.")]
+		HRESULT _stdcall HelpFile([in] BSTR rhs);
+
+	[propget, helpstring("Returns/sets a context ID for a topic in a Help file.")]
+		HRESULT _stdcall HelpContext([out, retval] long* rhs);
+	[propput, helpstring("Returns/sets a context ID for a topic in a Help file.")]
+		HRESULT _stdcall HelpContext([in] long rhs);
+
+	[helpstring("Generates a run-time error.")]
+		HRESULT _stdcall Raise(
+			[in] long Number,
+			[in, optional] VARIANT* Source,
+			[in, optional] VARIANT* Description,
+			[in, optional] VARIANT* HelpFile,
+			[in, optional] VARIANT* HelpContext);
+
+	[helpstring("Clears all property settings of the Err object.")]
+		HRESULT _stdcall Clear(void);
+
+	[propget, helpstring("Returns a system error code produced by a call to a dynamic-link library (DLL).")]
+		HRESULT _stdcall LastDllError([out, retval] long* rhs);
+};

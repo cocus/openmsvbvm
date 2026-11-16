@@ -32,6 +32,8 @@ EXPORTS
 	__vbaCyMul					@198
 	_allmul						@728
 	__vbaFpI2					@124
+	__vbaFpR4					@126
+	__vbaFpR8					@127
 	__vbaUI1I2					@140
 	__vbaUI1I4					@141
 	_adj_fptan					@727
@@ -54,11 +56,16 @@ EXPORTS
 	rtcEnvironVar				@666
 	rtcImmediateIf				@681
 	rtcPartition				@664
+	rtcGetTimer					@535
+	rtcErrObj					@685
+	rtcDoEvents					@598
 	rtcSendKeys					@599
 
 ; vba_Settings.cpp
 	rtcSaveSetting				@690
 	rtcDeleteSetting			@691
+	rtcBstrFromChar				@697
+	rtcVarBstrFromChar			@698
 	rtcGetSetting				@689
 
 ; vba_Arrays.cpp

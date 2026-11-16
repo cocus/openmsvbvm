@@ -65,7 +65,9 @@ Sub Main()
 
     'Call MathTest
 
-    Call FormTest
+    Call SendKeysTest
+
+    'Call FormTest
 
     Debug.Print "ASD"
     
@@ -183,6 +185,36 @@ Private Sub VBAInteractionTest()
     'MsgBox Partition(10, 0, 100, 5)
     'SendKeys "A", 333
     'MsgBox Switch(False, "should not happen 1", False, "should not happen 2", True, "Yes!!")
+End Sub
+
+Private Sub SendKeysTest()
+    Dim t As Single
+    ' Opens Notepad and types into it. Keep hands off the keyboard while it runs.
+    Shell "notepad.exe", vbNormalFocus
+    t = Timer
+    Do While Timer - t < 2   ' give Notepad time to appear and take focus
+        DoEvents
+    Loop
+
+    SendKeys "Hello from openmsvbvm! ", True
+    SendKeys "Shifted: +(abc) Ctrl+A then Ctrl+C: ", True
+    SendKeys "~Line 2 via tilde~"                          ' ~ = Enter
+    SendKeys "{ENTER}Braces: {{}{}} Plus: {+} Caret: {^} Percent: {%}{ENTER}"
+    SendKeys "{TAB}{TAB}x{BS 2}{LEFT 3}{HOME}{END}"        ' named keys + repeat counts
+    SendKeys "{ENTER}a{A 5}"                               ' repeat a plain char: aAAAAA
+    SendKeys "^a"                                          ' Ctrl+A (select all)
+    SendKeys "^(c)"                                        ' Ctrl+C
+    SendKeys "{RIGHT}{ENTER}Pasted: ^v"                    ' deselect, paste
+    SendKeys "{ENTER}Unicode: " & ChrW(&H20AC) & ChrW(&H3A9) & " (euro, omega)"
+
+    ' Extensions (OPENMSVBVM_SENDKEYS_EXTENSIONS=1 only):
+    'SendKeys "{ENTER}before{SLEEP 1500}after{DOEVENTS}{NUMPAD5}{F17}"
+
+    ' Error case: unbalanced brace must raise "Invalid procedure call" (5)
+    On Error Resume Next
+    SendKeys "{BOGUSKEY}"
+    MsgBox "Err after {BOGUSKEY}: " & Err.Number & " " & Err.Description
+    On Error GoTo 0
 End Sub
 
 Private Sub OnErrorGotoTest()

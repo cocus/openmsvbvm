@@ -246,7 +246,7 @@ CEXTERN vbaExceptions __stdcall vbaErrorFromHRESULT(HRESULT hr)
  * @brief			Return a constant string for the given VB exception.
  * @param			exception			The VB exception.
  */
-static const wchar_t* GetVBExceptionDescription(vbaExceptions exception)
+const wchar_t* GetVBExceptionDescription(vbaExceptions exception)
 {
     auto iter = ExceptionDescriptionMapping.find(exception);
 

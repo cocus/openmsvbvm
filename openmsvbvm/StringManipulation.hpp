@@ -6,27 +6,21 @@
  * @param			bstrIn				Input string.
  * @returns			Size of the string if the BSTR is valid, 0 otherwise.
  */
-unsigned int __stdcall strSafeGetLength(
-	BSTR			bstrIn
-);
+unsigned int __stdcall strSafeGetLength(BSTR bstrIn);
 
 /**
  * @brief			Converts a Variant (including errors) to a BSTR.
  * @param			pvargIn			Value to convert.
  * @returns			Result BSTR, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall __vbaStrErrVarCopy(
-	VARIANTARG		*pvargIn
-);
+EXPORT BSTR __stdcall __vbaStrErrVarCopy(VARIANTARG* pvargIn);
 
 /**
  * @brief			Converts a Variant (non including errors) to a BSTR.
  * @param			pvargIn			Value to convert.
  * @returns			Result BSTR, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall __vbaStrVarCopy(
-	VARIANTARG		*pvargIn
-);
+EXPORT BSTR __stdcall __vbaStrVarCopy(VARIANTARG* pvargIn);
 
 /**
  * @brief			Returns pvarSrc's value as a BSTR, avoiding a copy when it's
@@ -48,10 +42,7 @@ EXPORT BSTR __stdcall __vbaStrVarCopy(
  * @returns			The BSTR value (borrowed or owned, see pOutOwned), or NULL if
  *					pvarSrc is null or the coercion fails.
  */
-EXPORT BSTR __stdcall __vbaStrVarVal(
-	BSTR			*pOutOwned,
-	VARIANTARG		*pvarSrc
-);
+EXPORT BSTR __stdcall __vbaStrVarVal(BSTR* pOutOwned, VARIANTARG* pvarSrc);
 
 /**
  * @brief			Gets the length (in characters) of a BSTR. Confirmed via real
@@ -61,9 +52,7 @@ EXPORT BSTR __stdcall __vbaStrVarVal(
  * @param			bstrIn			Input string.
  * @returns			Length in characters, or 0 if bstrIn is null.
  */
-EXPORT int __stdcall __vbaLenBstr(
-	BSTR			bstrIn
-);
+EXPORT int __stdcall __vbaLenBstr(BSTR bstrIn);
 
 /**
  * @brief			Takes ownership of a Variant's string value, coercing it to
@@ -75,9 +64,7 @@ EXPORT int __stdcall __vbaLenBstr(
  *									VT_EMPTY on return.
  * @returns			The BSTR value (now owned by the caller), or NULL on failure.
  */
-EXPORT BSTR __stdcall __vbaStrVarMove(
-	VARIANTARG		*pvarg
-);
+EXPORT BSTR __stdcall __vbaStrVarMove(VARIANTARG* pvarg);
 
 /**
  * @brief			Implements Asc$(): the character code of a string's first
@@ -89,9 +76,22 @@ EXPORT BSTR __stdcall __vbaStrVarMove(
  * @param			bstrIn			Input string.
  * @returns			ANSI character code of the first character.
  */
-EXPORT short __stdcall rtcAnsiValueBstr(
-	BSTR			bstrIn
-);
+EXPORT short __stdcall rtcAnsiValueBstr(BSTR bstrIn);
+
+/**
+ * @brief			Implements ChrW$(code): a one-character BSTR from a 16-bit code.
+ * @param			iCode			Character code, -32768..65535.
+ * @returns			Newly allocated BSTR.
+ */
+EXPORT BSTR __stdcall rtcBstrFromChar(int iCode);
+
+/**
+ * @brief			Implements ChrW(code) into a Variant result slot.
+ * @param			pvargResult		Destination Variant, receives the VT_BSTR result.
+ * @param			iCode			Character code, -32768..65535.
+ * @returns			pvargResult.
+ */
+EXPORT VARIANT* __stdcall rtcVarBstrFromChar(VARIANT* pvargResult, int iCode);
 
 /**
  * @brief			Implements Mid$(string, start, [length]) into a Variant result
@@ -113,30 +113,20 @@ EXPORT short __stdcall rtcAnsiValueBstr(
  *									was omitted (meaning "to the end of the string").
  * @returns			pvargResult.
  */
-EXPORT VARIANTARG * __stdcall rtcMidCharVar(
-	VARIANTARG		*pvargResult,
-	VARIANTARG		*pvargString,
-	int				iStart,
-	VARIANTARG		*pvargLength
-);
+EXPORT VARIANTARG* __stdcall rtcMidCharVar(VARIANTARG* pvargResult, VARIANTARG* pvargString, int iStart, VARIANTARG* pvargLength);
 
 /**
  * @brief			Frees a list of BSTRs via their pointers, and nulls them.
  * @param			argCount		Count of elements.
  * @param			...				Pointers to BSTRs to free and null them.
  */
-EXPORT void __cdecl __vbaFreeStrList(
-	unsigned int argCount,
-	...
-);
+EXPORT void __cdecl __vbaFreeStrList(unsigned int argCount, ...);
 
 /**
  * @brief			Frees a BSTR via its pointer, and nulls it.
  * @param			pbstrIn			Pointer to a BSTR to free and null it.
  */
-EXPORT void __fastcall __vbaFreeStr(
-	BSTR		*pbstrIn
-);
+EXPORT void __fastcall __vbaFreeStr(BSTR* pbstrIn);
 
 /**
  * @brief			Moves one BSTR to the pointer of another (previously freed if needed) BSTR.
@@ -144,10 +134,7 @@ EXPORT void __fastcall __vbaFreeStr(
  * @param			bstrSrc			Source BSTR.
  * @returns			Same value as pbstrSrc.
  */
-EXPORT BSTR __fastcall __vbaStrMove(
-	BSTR		*pbstrDest,
-	BSTR		bstrSrc
-);
+EXPORT BSTR __fastcall __vbaStrMove(BSTR* pbstrDest, BSTR bstrSrc);
 
 /**
  * @brief			Concatenates two BSTRs.
@@ -155,39 +142,25 @@ EXPORT BSTR __fastcall __vbaStrMove(
  * @param			bstrLeft		Left operand for the concatenation.
  * @returns			Same value as bstrLeft on success, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall __vbaStrCat(
-	BSTR bstrLeft,
-	BSTR bstrRight
-);
+EXPORT BSTR __stdcall __vbaStrCat(BSTR bstrLeft, BSTR bstrRight);
 
 /**
  * @brief			Copies a BSTR and converts their characters to lowercase.
  * @param			strIn			String to convert.
  * @returns			Converted BSTR, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall rtcLowerCaseBstr(
-	OLECHAR *strIn
-);
+EXPORT BSTR __stdcall rtcLowerCaseBstr(OLECHAR* strIn);
 
 /**
  * @brief			Copies a BSTR and converts their characters to uppercase.
  * @param			strIn			String to convert.
  * @returns			Converted BSTR, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall rtcUpperCaseBstr(
-	BSTR strIn
-);
+EXPORT BSTR __stdcall rtcUpperCaseBstr(BSTR strIn);
 
 /**
  * @brief			Copies a BSTR and converts their characters to uppercase.
  * @param			strIn			String to convert.
  * @returns			Converted BSTR, NULL on error (not exactly as VB, but safer).
  */
-EXPORT BSTR __stdcall rtcReplace(
-	BSTR		bstrExpression,
-	BSTR		bstrFind,
-	BSTR		bstrReplace,
-	int			iStart,
-	int			iCount,
-	int			iCompareMethod
-);
+EXPORT BSTR __stdcall rtcReplace(BSTR bstrExpression, BSTR bstrFind, BSTR bstrReplace, int iStart, int iCount, int iCompareMethod);
